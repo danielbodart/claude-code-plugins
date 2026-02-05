@@ -26,7 +26,7 @@ Reduces prompt fatigue by automatically approving `WebFetch` for URLs discovered
 - Non-search URLs: blocked in autonomous mode, prompted in interactive mode
 - Handles redirects automatically
 
-**Trust model:** You're trusting that malicious sites generally don't rank well organically. Brave Search (Claude's search backend) filters adult content and SEO spam, but does NOT filter malware/phishing URLs—if you need to vet every URL, don't use this plugin.
+**Trust model:** You're trusting that malicious sites generally don't rank well organically. Brave Search (Claude's search backend) filters adult content and SEO spam, but does NOT explicitly filter malware/phishing URLs—if you need to vet every URL, don't use this plugin.
 
 **Requirements:** `jq`
 
