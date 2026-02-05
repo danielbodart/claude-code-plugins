@@ -4,10 +4,27 @@
 # Behavior depends on permission mode:
 #   - bypassPermissions/dontAsk: Strictly block non-search URLs (for autonomous mode)
 #   - default/other: Prompt user to approve non-search URLs (for interactive mode)
+#
+# Configuration (via .env file or environment variables):
+#   URL_ALLOWLIST_DOMAIN_MODE - if "true", allow any URL from approved domains
+#   URL_ALLOWLIST_EXPIRE_MINUTES - how long URLs stay valid (default: 30)
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APPROVED_URLS_FILE="$SCRIPT_DIR/../.approved-urls.txt"
 LOG_FILE="$SCRIPT_DIR/../.url-hook.log"
+ENV_FILE="$SCRIPT_DIR/../.env"
+
+# Load config from .env if present
+if [ -f "$ENV_FILE" ]; then
+    source "$ENV_FILE"
+fi
+
+# Defaults
+: "${URL_ALLOWLIST_DOMAIN_MODE:=false}"
+: "${URL_ALLOWLIST_EXPIRE_MINUTES:=30}"
+
+# Convert minutes to seconds
+EXPIRE_SECONDS=$((URL_ALLOWLIST_EXPIRE_MINUTES * 60))
 
 # Read the hook input from stdin
 INPUT=$(cat)
@@ -21,6 +38,11 @@ STRICT_MODE=false
 if [ "$PERMISSION_MODE" = "bypassPermissions" ] || [ "$PERMISSION_MODE" = "dontAsk" ]; then
     STRICT_MODE=true
 fi
+
+# Helper function to extract domain from URL
+extract_domain() {
+    echo "$1" | sed -E 's|^https?://([^/]+).*|\1|'
+}
 
 # Helper function to deny or ask based on mode
 deny_or_ask() {
@@ -59,6 +81,12 @@ if [ ! -f "$APPROVED_URLS_FILE" ]; then
     exit 0
 fi
 
+# Get current timestamp for expiry check
+NOW=$(date +%s)
+
+# Extract domain from requested URL (for domain mode)
+REQUEST_DOMAIN=$(extract_domain "$URL")
+
 # Check if URL is in the approved list
 FOUND=false
 while IFS=' ' read -r timestamp url_entry; do
@@ -66,27 +94,57 @@ while IFS=' ' read -r timestamp url_entry; do
         continue
     fi
 
-    # Check if URL matches (exact match or starts with approved URL)
-    if [ "$URL" = "$url_entry" ] || [[ "$URL" == "$url_entry"* ]]; then
-        FOUND=true
-        break
+    # Check if entry has expired
+    AGE=$((NOW - timestamp))
+    if [ "$AGE" -gt "$EXPIRE_SECONDS" ]; then
+        continue
+    fi
+
+    if [ "$URL_ALLOWLIST_DOMAIN_MODE" = "true" ]; then
+        # Domain mode: check if domains match
+        ENTRY_DOMAIN=$(extract_domain "$url_entry")
+        if [ "$REQUEST_DOMAIN" = "$ENTRY_DOMAIN" ]; then
+            FOUND=true
+            break
+        fi
+    else
+        # Exact mode: check if URL matches (exact match or starts with approved URL)
+        if [ "$URL" = "$url_entry" ] || [[ "$URL" == "$url_entry"* ]]; then
+            FOUND=true
+            break
+        fi
     fi
 done < "$APPROVED_URLS_FILE"
 
 if [ "$FOUND" = true ]; then
     # URL is approved - explicitly allow
-    echo "[$(date -Iseconds)] [$PERMISSION_MODE] Allowed fetch to: $URL" >> "$LOG_FILE"
-    jq -n '{
-        hookSpecificOutput: {
-            hookEventName: "PreToolUse",
-            permissionDecision: "allow",
-            permissionDecisionReason: "URL found in recent WebSearch results"
-        }
-    }'
+    if [ "$URL_ALLOWLIST_DOMAIN_MODE" = "true" ]; then
+        echo "[$(date -Iseconds)] [$PERMISSION_MODE] Allowed fetch to: $URL (domain $REQUEST_DOMAIN approved)" >> "$LOG_FILE"
+        jq -n --arg domain "$REQUEST_DOMAIN" '{
+            hookSpecificOutput: {
+                hookEventName: "PreToolUse",
+                permissionDecision: "allow",
+                permissionDecisionReason: ("Domain " + $domain + " found in recent WebSearch results")
+            }
+        }'
+    else
+        echo "[$(date -Iseconds)] [$PERMISSION_MODE] Allowed fetch to: $URL" >> "$LOG_FILE"
+        jq -n '{
+            hookSpecificOutput: {
+                hookEventName: "PreToolUse",
+                permissionDecision: "allow",
+                permissionDecisionReason: "URL found in recent WebSearch results"
+            }
+        }'
+    fi
     exit 0
 else
     # URL not approved
     echo "[$(date -Iseconds)] [$PERMISSION_MODE] Not in search results: $URL" >> "$LOG_FILE"
-    deny_or_ask "URL not found in recent WebSearch results. Please search for this URL first."
+    if [ "$URL_ALLOWLIST_DOMAIN_MODE" = "true" ]; then
+        deny_or_ask "Domain $REQUEST_DOMAIN not found in recent WebSearch results. Please search for this domain first."
+    else
+        deny_or_ask "URL not found in recent WebSearch results. Please search for this URL first."
+    fi
     exit 0
 fi

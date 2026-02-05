@@ -7,8 +7,8 @@
   },
   "plugins": [
     {
-      "name": "pkexec-sudo",
-      "source": "./pkexec-sudo",
+      "name": "graphical-sudo",
+      "source": "./graphical-sudo",
       "description": "Replaces sudo with pkexec for graphical authentication on Linux (GNOME/Cinnamon/GTK)",
       "version": "1.0.0"
     },

@@ -4,7 +4,7 @@ A collection of Claude Code plugins, including security-focused hooks for Linux 
 
 ## Plugins
 
-### pkexec-sudo
+### graphical-sudo
 
 Replaces `sudo` commands with `pkexec` for graphical authentication on Linux GTK desktops (GNOME, Cinnamon, MATE, etc.).
 
@@ -37,7 +37,7 @@ Restricts `WebFetch` to only URLs discovered via `WebSearch` results, preventing
 
 2. Install desired plugins:
 ```
-/plugin install pkexec-sudo@danielbodart-plugins
+/plugin install graphical-sudo@danielbodart-plugins
 /plugin install url-allowlist@danielbodart-plugins
 ```
 
@@ -45,7 +45,7 @@ Restricts `WebFetch` to only URLs discovered via `WebSearch` results, preventing
 
 Test plugins locally before publishing:
 ```bash
-claude --plugin-dir ./pkexec-sudo
+claude --plugin-dir ./graphical-sudo
 claude --plugin-dir ./url-allowlist
 ```
 

@@ -1,3 +1,6 @@
 # Runtime files created during testing
 .approved-urls.txt
 .url-hook.log
+
+# Local configuration (use .env.example as template)
+.env

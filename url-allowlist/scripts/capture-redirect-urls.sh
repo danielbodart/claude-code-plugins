@@ -5,6 +5,12 @@
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APPROVED_URLS_FILE="$SCRIPT_DIR/../.approved-urls.txt"
 LOG_FILE="$SCRIPT_DIR/../.url-hook.log"
+ENV_FILE="$SCRIPT_DIR/../.env"
+
+# Load config from .env if present
+if [ -f "$ENV_FILE" ]; then
+    source "$ENV_FILE"
+fi
 
 # Read the hook input from stdin
 INPUT=$(cat)
