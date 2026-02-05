@@ -6,25 +6,27 @@ A collection of Claude Code plugins for security, git workflows, and code review
 
 ### graphical-sudo
 
-Replaces `sudo` commands with `pkexec` for graphical authentication on Linux GTK desktops (GNOME, Cinnamon, MATE, etc.).
+Enables graphical password prompts for `sudo` commands on Linux GTK desktops (GNOME, Cinnamon, MATE, Xfce, etc.).
 
 **How it works:**
 - Intercepts Bash commands containing `sudo`
-- Replaces `sudo` with `pkexec` and executes via graphical PolicyKit authentication
+- Transforms `sudo` to `sudo -A` with `SUDO_ASKPASS` set to a zenity script
+- Zenity shows a graphical password dialog
 - Returns the output to Claude without requiring terminal password entry
 
-**Requirements:** `jq`, `pkexec` (pre-installed on most GTK desktops)
+**Requirements:** `jq`, `zenity` (pre-installed on most GTK desktops)
 
 ### url-allowlist
 
-Restricts `WebFetch` to only URLs discovered via `WebSearch` results, preventing Claude from fetching arbitrary URLs.
+Reduces prompt fatigue by automatically approving `WebFetch` for URLs discovered via `WebSearch`. No more clicking "Allow" for every search result.
 
 **How it works:**
 - Captures URLs from WebSearch results into an allowlist
-- Validates WebFetch URLs against the allowlist
-- In autonomous mode: blocks non-allowlisted URLs
-- In interactive mode: prompts user to approve non-allowlisted URLs
-- Automatically captures redirect URLs to allow following redirects
+- Auto-approves WebFetch for URLs in the allowlist
+- Non-search URLs: blocked in autonomous mode, prompted in interactive mode
+- Handles redirects automatically
+
+**Trust model:** Delegates URL safety to Brave Search (Claude's search backend). Note that Brave Search does NOT filter malware/phishing URLs—if you need to vet every URL, don't use this plugin.
 
 **Requirements:** `jq`
 
