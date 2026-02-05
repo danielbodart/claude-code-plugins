@@ -1,0 +1,7 @@
+# Plugin runtime files
+.approved-urls.txt
+.url-hook.log
+
+# OS files
+.DS_Store
+Thumbs.db

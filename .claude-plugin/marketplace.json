@@ -1,0 +1,21 @@
+{
+  "name": "dan-claude-hooks",
+  "description": "Security-focused Claude Code plugins for Linux desktop and web access control",
+  "owner": {
+    "name": "Dan"
+  },
+  "plugins": [
+    {
+      "name": "pkexec-sudo",
+      "source": "./pkexec-sudo",
+      "description": "Replaces sudo with pkexec for graphical authentication on Linux (GNOME/Cinnamon/GTK)",
+      "version": "1.0.0"
+    },
+    {
+      "name": "url-allowlist",
+      "source": "./url-allowlist",
+      "description": "Restricts WebFetch to URLs discovered via WebSearch, preventing arbitrary URL access",
+      "version": "1.0.0"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "name": "url-allowlist",
+  "version": "1.0.0",
+  "description": "Restricts WebFetch to only URLs discovered via WebSearch results, preventing arbitrary URL access",
+  "author": {
+    "name": "Dan"
+  },
+  "license": "MIT",
+  "keywords": ["security", "web", "fetch", "allowlist", "search"],
+  "hooks": "./hooks.json"
+}

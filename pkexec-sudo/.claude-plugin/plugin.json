@@ -1,0 +1,11 @@
+{
+  "name": "pkexec-sudo",
+  "version": "1.0.0",
+  "description": "Replaces sudo commands with pkexec for graphical authentication on Linux (GNOME/Cinnamon/GTK desktops)",
+  "author": {
+    "name": "Dan"
+  },
+  "license": "MIT",
+  "keywords": ["linux", "sudo", "pkexec", "polkit", "gnome", "security"],
+  "hooks": "./hooks.json"
+}
