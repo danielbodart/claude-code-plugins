@@ -17,6 +17,12 @@
       "source": "./url-allowlist",
       "description": "Restricts WebFetch to URLs discovered via WebSearch, preventing arbitrary URL access",
       "version": "1.0.0"
+    },
+    {
+      "name": "commit-push-trunk",
+      "source": "./commit-push-trunk",
+      "description": "Commit and push directly to trunk with linear history, supporting git worktrees",
+      "version": "1.0.0"
     }
   ]
 }

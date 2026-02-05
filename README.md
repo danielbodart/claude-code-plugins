@@ -28,6 +28,18 @@ Restricts `WebFetch` to only URLs discovered via `WebSearch` results, preventing
 
 **Requirements:** `jq`
 
+### commit-push-trunk
+
+Commits and pushes directly to trunk with linear history, supporting git worktrees for feature branch development.
+
+**How it works:**
+- Detects whether you're on trunk or a feature branch (worktree)
+- Stages and commits with an appropriate message
+- Uses `--rebase` for pulls and `--ff-only` for merges to maintain linear history
+- Handles cross-repo operations when working in worktrees
+
+**Requirements:** Git
+
 ## Installation
 
 1. Add the marketplace:
@@ -39,6 +51,7 @@ Restricts `WebFetch` to only URLs discovered via `WebSearch` results, preventing
 ```
 /plugin install graphical-sudo@danielbodart-plugins
 /plugin install url-allowlist@danielbodart-plugins
+/plugin install commit-push-trunk@danielbodart-plugins
 ```
 
 ## Local Testing
@@ -47,6 +60,7 @@ Test plugins locally before publishing:
 ```bash
 claude --plugin-dir ./graphical-sudo
 claude --plugin-dir ./url-allowlist
+claude --plugin-dir ./commit-push-trunk
 ```
 
 ## License

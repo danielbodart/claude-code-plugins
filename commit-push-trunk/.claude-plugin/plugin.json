@@ -1,0 +1,8 @@
+{
+  "name": "commit-push-trunk",
+  "description": "Commit and push directly to trunk with linear history, supporting git worktrees",
+  "author": {
+    "name": "Daniel Worthington-Bodart",
+    "email": "dan@bodar.com"
+  }
+}
