@@ -30,7 +30,9 @@ Restricts `WebFetch` to only URLs discovered via `WebSearch` results, preventing
 
 ### commit-push-trunk
 
-Commits and pushes directly to trunk with linear history, supporting git worktrees for feature branch development.
+Commits and pushes directly to trunk with linear history, supporting git worktrees for feature branch development. Uses the `commit-commands` namespace to appear alongside the official `commit-commands` plugin from `anthropics/claude-plugins-official`.
+
+**Command:** `/commit-commands:commit-push-trunk`
 
 **How it works:**
 - Detects whether you're on trunk or a feature branch (worktree)
@@ -64,7 +66,7 @@ Automated code review for local uncommitted or unpushed changes. Designed for tr
 ```
 /plugin install graphical-sudo@danielbodart-plugins
 /plugin install url-allowlist@danielbodart-plugins
-/plugin install commit-push-trunk@danielbodart-plugins
+/plugin install commit-commands@danielbodart-plugins
 /plugin install code-review-local@danielbodart-plugins
 ```
 

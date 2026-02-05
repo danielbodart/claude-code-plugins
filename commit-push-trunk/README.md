@@ -11,9 +11,11 @@ This plugin is designed for trunk-based development workflows where you want to:
 
 ## Command
 
-### `/commit-push-trunk`
+### `/commit-commands:commit-push-trunk`
 
 Commits your changes and pushes directly to trunk, handling both main repository and worktree scenarios automatically.
+
+> **Note:** This plugin uses the `commit-commands` namespace to appear alongside the official `commit-commands` plugin from `anthropics/claude-plugins-official` (which provides `/commit-commands:commit`, `/commit-commands:commit-push-pr`, etc.).
 
 **What it does:**
 
@@ -77,7 +79,7 @@ git -C <main-repo> push
 
 ```bash
 # Make your changes, then run:
-/commit-push-trunk
+/commit-commands:commit-push-trunk
 ```
 
 The command will automatically detect your situation and handle the appropriate workflow.
@@ -107,7 +109,7 @@ This plugin supports trunk-based development where:
 
 2. Install the plugin:
 ```
-/plugin install commit-push-trunk@danielbodart-plugins
+/plugin install commit-commands@danielbodart-plugins
 ```
 
 ## Local Testing

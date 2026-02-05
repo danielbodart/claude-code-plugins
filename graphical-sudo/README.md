@@ -17,11 +17,6 @@ A Claude Code plugin that enables graphical password prompts for `sudo` commands
 - Xfce
 - Any GTK-based desktop with zenity
 
-## Requirements
-
-- `jq` - JSON processor
-- `zenity` - GTK dialog tool (pre-installed on most GTK desktops)
-
 ## How It Works
 
 1. Claude attempts to run a command like `sudo apt update`
@@ -30,9 +25,30 @@ A Claude Code plugin that enables graphical password prompts for `sudo` commands
 4. If authenticated, the command runs and output is returned to Claude
 5. If cancelled, Claude receives an error message
 
-## Why Not pkexec?
+## Dependencies
 
-We originally tried using `pkexec` (PolicyKit), but for unknown reasons it has a ~60 second delay when run from Claude Code. The `sudo -A` with zenity askpass approach works instantly.
+- **bash** - Shell interpreter
+- **jq** - JSON processor for parsing hook input
+- **zenity** - GTK dialog tool for graphical password prompts (pre-installed on most GTK desktops)
+
+Standard utilities `grep` and `sed` are also used but are available on all Linux systems.
+
+## Installation
+
+On Debian/Ubuntu-based systems:
+```bash
+sudo apt install jq zenity
+```
+
+On Fedora/RHEL-based systems:
+```bash
+sudo dnf install jq zenity
+```
+
+On Arch-based systems:
+```bash
+sudo pacman -S jq zenity
+```
 
 ## Limitations
 
