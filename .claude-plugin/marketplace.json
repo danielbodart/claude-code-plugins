@@ -1,8 +1,9 @@
 {
-  "name": "dan-claude-hooks",
+  "name": "danielbodart-plugins",
   "description": "Security-focused Claude Code plugins for Linux desktop and web access control",
   "owner": {
-    "name": "Dan"
+    "name": "Daniel Worthington-Bodart",
+    "email": "dan@bodar.com"
   },
   "plugins": [
     {

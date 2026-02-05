@@ -32,13 +32,13 @@ Restricts `WebFetch` to only URLs discovered via `WebSearch` results, preventing
 
 1. Add the marketplace:
 ```
-/plugin marketplace add your-username/claude-code-plugins
+/plugin marketplace add danielbodart/claude-code-plugins
 ```
 
 2. Install desired plugins:
 ```
-/plugin install pkexec-sudo@dan-claude-hooks
-/plugin install url-allowlist@dan-claude-hooks
+/plugin install pkexec-sudo@danielbodart-plugins
+/plugin install url-allowlist@danielbodart-plugins
 ```
 
 ## Local Testing
