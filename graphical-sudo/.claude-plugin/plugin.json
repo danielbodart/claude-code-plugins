@@ -1,13 +1,13 @@
 {
-  "name": "pkexec-sudo",
+  "name": "graphical-sudo",
   "version": "1.0.0",
-  "description": "Replaces sudo commands with pkexec for graphical authentication on Linux (GNOME/Cinnamon/GTK desktops)",
+  "description": "Enables graphical password prompts for sudo commands on Linux GTK desktops using zenity",
   "author": {
     "name": "Daniel Worthington-Bodart",
     "email": "dan@bodar.com"
   },
   "repository": "https://github.com/danielbodart/claude-code-plugins",
   "license": "MIT",
-  "keywords": ["linux", "sudo", "pkexec", "polkit", "gnome", "security"],
+  "keywords": ["linux", "sudo", "zenity", "graphical", "gnome", "security"],
   "hooks": "./hooks.json"
 }

@@ -74,8 +74,15 @@ while IFS=' ' read -r timestamp url_entry; do
 done < "$APPROVED_URLS_FILE"
 
 if [ "$FOUND" = true ]; then
-    # URL is approved - allow
+    # URL is approved - explicitly allow
     echo "[$(date -Iseconds)] [$PERMISSION_MODE] Allowed fetch to: $URL" >> "$LOG_FILE"
+    jq -n '{
+        hookSpecificOutput: {
+            hookEventName: "PreToolUse",
+            permissionDecision: "allow",
+            permissionDecisionReason: "URL found in recent WebSearch results"
+        }
+    }'
     exit 0
 else
     # URL not approved

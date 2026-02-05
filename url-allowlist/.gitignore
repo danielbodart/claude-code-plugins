@@ -1,0 +1,3 @@
+# Runtime files created during testing
+.approved-urls.txt
+.url-hook.log
