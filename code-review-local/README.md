@@ -13,9 +13,11 @@ It uses the same multi-agent approach as PR review tools, with confidence scorin
 
 ## Command
 
-### `/code-review-local`
+### `/code-review:code-review-local`
 
 Reviews local changes using multiple specialized agents running in parallel.
+
+> **Note:** This plugin uses the `code-review` namespace to appear alongside the official `code-review` plugin from `anthropics/claude-plugins-official` (which provides `/code-review:code-review` for PR reviews).
 
 **What it does:**
 
@@ -36,7 +38,7 @@ Reviews local changes using multiple specialized agents running in parallel.
 **Usage:**
 
 ```bash
-/code-review-local
+/code-review:code-review-local
 ```
 
 ## Review Modes
@@ -51,7 +53,7 @@ Best for: Reviewing your work before making a commit.
 
 ```bash
 # Make changes to your code
-/code-review-local
+/code-review:code-review-local
 # Select "Uncommitted changes"
 # Review feedback, fix issues
 # Then commit
@@ -72,7 +74,7 @@ git commit -m "Fix edge case"
 git commit -m "Add tests"
 
 # Review all commits before pushing
-/code-review-local
+/code-review:code-review-local
 # Select "Unpushed commits"
 # Review feedback
 # Then push
@@ -140,7 +142,7 @@ This plugin complements the `commit-push-trunk` workflow:
 ```bash
 # 1. Make changes
 # 2. Review before committing
-/code-review-local
+/code-review:code-review-local
 
 # 3. Fix any issues found
 # 4. Commit and push
@@ -155,7 +157,7 @@ git commit -m "Step 1"
 git commit -m "Step 2"
 
 # 2. Review all commits before pushing
-/code-review-local
+/code-review:code-review-local
 # Select "Unpushed commits"
 
 # 3. Fix issues if needed
@@ -177,7 +179,7 @@ git commit -m "Step 2"
 
 2. Install the plugin:
 ```
-/plugin install code-review-local@danielbodart-plugins
+/plugin install code-review@danielbodart-plugins
 ```
 
 ## Local Testing

@@ -1,5 +1,5 @@
 {
-  "name": "code-review-local",
+  "name": "code-review",
   "description": "Automated code review for local uncommitted or unpushed changes using multi-agent confidence-based scoring",
   "author": {
     "name": "Daniel Worthington-Bodart",

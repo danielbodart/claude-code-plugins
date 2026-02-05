@@ -46,7 +46,9 @@ Commits and pushes directly to trunk with linear history, supporting git worktre
 
 ### code-review-local
 
-Automated code review for local uncommitted or unpushed changes. Designed for trunk-based development where you review before committing or pushing.
+Automated code review for local uncommitted or unpushed changes. Designed for trunk-based development where you review before committing or pushing. Uses the `code-review` namespace to appear alongside the official `code-review` plugin from `anthropics/claude-plugins-official`.
+
+**Command:** `/code-review:code-review-local`
 
 **How it works:**
 - Asks whether to review uncommitted changes or unpushed commits
@@ -69,7 +71,7 @@ Automated code review for local uncommitted or unpushed changes. Designed for tr
 /plugin install graphical-sudo@danielbodart-plugins
 /plugin install url-allowlist@danielbodart-plugins
 /plugin install commit-commands@danielbodart-plugins
-/plugin install code-review-local@danielbodart-plugins
+/plugin install code-review@danielbodart-plugins
 ```
 
 ## Local Testing
