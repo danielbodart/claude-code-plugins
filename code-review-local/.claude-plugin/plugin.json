@@ -1,0 +1,8 @@
+{
+  "name": "code-review-local",
+  "description": "Automated code review for local uncommitted or unpushed changes using multi-agent confidence-based scoring",
+  "author": {
+    "name": "Daniel Worthington-Bodart",
+    "email": "dan@bodar.com"
+  }
+}

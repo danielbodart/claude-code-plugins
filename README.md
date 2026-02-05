@@ -1,6 +1,6 @@
 # Claude Code Plugins
 
-A collection of Claude Code plugins, including security-focused hooks for Linux desktop and web access control.
+A collection of Claude Code plugins for security, git workflows, and code review. Designed for trunk-based development.
 
 ## Plugins
 
@@ -40,6 +40,19 @@ Commits and pushes directly to trunk with linear history, supporting git worktre
 
 **Requirements:** Git
 
+### code-review-local
+
+Automated code review for local uncommitted or unpushed changes. Designed for trunk-based development where you review before committing or pushing.
+
+**How it works:**
+- Asks whether to review uncommitted changes or unpushed commits
+- Launches 5 parallel agents to review from different perspectives
+- Uses confidence scoring (0-100) to filter false positives
+- Only reports issues with 80+ confidence score
+- Outputs review directly to terminal (no PR required)
+
+**Requirements:** Git
+
 ## Installation
 
 1. Add the marketplace:
@@ -52,6 +65,7 @@ Commits and pushes directly to trunk with linear history, supporting git worktre
 /plugin install graphical-sudo@danielbodart-plugins
 /plugin install url-allowlist@danielbodart-plugins
 /plugin install commit-push-trunk@danielbodart-plugins
+/plugin install code-review-local@danielbodart-plugins
 ```
 
 ## Local Testing
@@ -61,6 +75,7 @@ Test plugins locally before publishing:
 claude --plugin-dir ./graphical-sudo
 claude --plugin-dir ./url-allowlist
 claude --plugin-dir ./commit-push-trunk
+claude --plugin-dir ./code-review-local
 ```
 
 ## License

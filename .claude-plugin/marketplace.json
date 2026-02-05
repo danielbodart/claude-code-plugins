@@ -23,6 +23,12 @@
       "source": "./commit-push-trunk",
       "description": "Commit and push directly to trunk with linear history, supporting git worktrees",
       "version": "1.0.0"
+    },
+    {
+      "name": "code-review-local",
+      "source": "./code-review-local",
+      "description": "Code review local uncommitted or unpushed changes with multi-agent confidence scoring",
+      "version": "1.0.0"
     }
   ]
 }
