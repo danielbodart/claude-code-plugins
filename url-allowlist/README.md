@@ -6,7 +6,11 @@ A Claude Code plugin that **reduces prompt fatigue** by automatically approving 
 
 By default, Claude Code asks for permission every time it wants to fetch a URL. When you're researching a topic, this means clicking "Allow" repeatedly for every search result Claude wants to read.
 
-This plugin auto-approves fetches to URLs that came from search results, eliminating repetitive permission prompts while maintaining security for arbitrary URL access.
+**The problem with prompt fatigue:** When you're clicking "Allow" over and over, you stop paying attention. Imagine a prompt injection that tells Claude to gather sensitive data and POST it to an external URL. After clicking "Allow" twenty times for legitimate search results, you might just click "Allow" again without noticing it's now exfiltrating your data.
+
+**The solution:** By auto-approving routine search result fetches, you stay alert for the unusual requests. When something unexpected comes up—like a request to a URL that didn't come from search results—you're more likely to notice and scrutinize it.
+
+Paradoxically, being more permissive on safe operations makes you more secure overall.
 
 ### Trust Model
 

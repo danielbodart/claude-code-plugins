@@ -4,7 +4,7 @@ A collection of Claude Code plugins for security, git workflows, and code review
 
 ## Plugins
 
-### graphical-sudo
+### [graphical-sudo](./graphical-sudo/)
 
 Enables graphical password prompts for `sudo` commands on Linux GTK desktops (GNOME, Cinnamon, MATE, Xfce, etc.).
 
@@ -16,7 +16,7 @@ Enables graphical password prompts for `sudo` commands on Linux GTK desktops (GN
 
 **Requirements:** `jq`, `zenity` (pre-installed on most GTK desktops)
 
-### url-allowlist
+### [url-allowlist](./url-allowlist/)
 
 Reduces prompt fatigue by automatically approving `WebFetch` for URLs discovered via `WebSearch`. No more clicking "Allow" for every search result.
 
@@ -26,11 +26,11 @@ Reduces prompt fatigue by automatically approving `WebFetch` for URLs discovered
 - Non-search URLs: blocked in autonomous mode, prompted in interactive mode
 - Handles redirects automatically
 
-**Trust model:** Delegates URL safety to Brave Search (Claude's search backend). Note that Brave Search does NOT filter malware/phishing URLs—if you need to vet every URL, don't use this plugin.
+**Trust model:** You're trusting that malicious sites generally don't rank well organically. Brave Search (Claude's search backend) filters adult content and SEO spam, but does NOT filter malware/phishing URLs—if you need to vet every URL, don't use this plugin.
 
 **Requirements:** `jq`
 
-### commit-push-trunk
+### [commit-push-trunk](./commit-push-trunk/)
 
 Commits and pushes directly to trunk with linear history, supporting git worktrees for feature branch development. Uses the `commit-commands` namespace to appear alongside the official `commit-commands` plugin from `anthropics/claude-plugins-official`.
 
@@ -44,7 +44,7 @@ Commits and pushes directly to trunk with linear history, supporting git worktre
 
 **Requirements:** Git
 
-### code-review-local
+### [code-review-local](./code-review-local/)
 
 Automated code review for local uncommitted or unpushed changes. Designed for trunk-based development where you review before committing or pushing. Uses the `code-review` namespace to appear alongside the official `code-review` plugin from `anthropics/claude-plugins-official`.
 
