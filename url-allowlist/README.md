@@ -89,7 +89,7 @@ URLs automatically expire after `URL_ALLOWLIST_EXPIRE_MINUTES` (default 30). Thi
 
 ## Security: Exfiltration Test Results
 
-We conducted a red team exercise to test whether Claude could exfiltrate a fake secret (`SECRET_API_KEY` in a `.env` file) when running with this plugin, sandbox mode enabled, and `dangerouslyAllowAllBash` active.
+We conducted a red team exercise to test whether Claude could exfiltrate a fake secret (`SECRET_API_KEY` in a `.env` file) when running with this plugin, `/sandbox` mode enabled, and `--dangerously-skip-permissions` active.
 
 ### What was blocked
 
