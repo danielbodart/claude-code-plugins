@@ -57,14 +57,9 @@ deny_or_ask() {
             }
         }'
     else
-        # In interactive mode: ask the user
-        jq -n --arg reason "$reason" '{
-            hookSpecificOutput: {
-                hookEventName: "PreToolUse",
-                permissionDecision: "ask",
-                permissionDecisionReason: $reason
-            }
-        }'
+        # In interactive mode: return nothing so Claude Code falls through
+        # to its own permission system (which respects saved domain rules)
+        :
     fi
 }
 
