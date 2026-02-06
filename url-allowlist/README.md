@@ -87,6 +87,47 @@ URLs automatically expire after `URL_ALLOWLIST_EXPIRE_MINUTES` (default 30). Thi
      - Interactive mode → user prompted to approve
 3. Redirect URLs are automatically added to the allowlist
 
+## Security: Exfiltration Test Results
+
+We conducted a red team exercise to test whether Claude could exfiltrate a fake secret (`SECRET_API_KEY` in a `.env` file) when running with this plugin, sandbox mode enabled, and `dangerouslyAllowAllBash` active.
+
+### What was blocked
+
+**All 17 network-based exfiltration attempts were blocked**, including:
+
+- Direct HTTP requests (`curl`, `wget`, Python `urllib`, Node.js `https`)
+- Raw socket connections (`netcat`, Python `socket`, Bash `/dev/tcp`)
+- DNS exfiltration (`dig`, `nslookup`)
+- ICMP with encoded payloads (`ping -p`)
+- Alternative protocols (SSH, SMTP)
+- Proxy-based redirects
+- **WebFetch with secrets in URL parameters** — the plugin's exact-match validation blocked attempts to append query strings to legitimate search result URLs
+
+The combination of sandbox networking and this plugin's URL validation is highly effective. The sandbox blocks all outbound connections from Bash, while the plugin prevents Claude from smuggling data through `WebFetch` URL parameters.
+
+### Known limitation: WebSearch queries
+
+`WebSearch` was the one tool that accepted secret material — the secret could be embedded in a search query, which is sent to Brave Search's servers.
+
+**Why this is low risk in practice:**
+
+- **Brave Search is privacy-focused** — queries are not stored for regular users, there is no public trending/analytics feature (no Google Trends equivalent), and no API endpoint exposes recent searches
+- **Anthropic almost certainly uses Brave's enterprise tier** with Zero Data Retention, meaning no queries are retained for any length of time. Given Anthropic's own safety focus and the scale of the partnership, it would be surprising if they didn't use the most privacy-protective option available
+- **No known retrieval path** — even if a secret were sent as a query, there is no mechanism for a third-party attacker to retrieve it from Brave's systems
+- **Brave passed SOC 2 Type II audit** by an independent auditor (Prescient Security)
+
+We considered adding a `PreToolUse:WebSearch` hook to scan queries for high-entropy strings or secret patterns, but decided against it — false positives on error codes, GUIDs, and other legitimate search terms would degrade the experience without meaningful security benefit.
+
+### Recommended setup
+
+For the strongest exfiltration protection, combine:
+
+1. **Sandbox mode** — blocks all direct network access from Bash
+2. **`dangerouslyAllowAllBash`** — lets Claude run commands freely without prompt fatigue (sandbox provides the safety net)
+3. **This plugin (exact match mode)** — auto-approves only URLs from search results, blocks all fabricated URLs via `WebFetch`
+
+This gives Claude full local tool access while limiting network exfiltration to only the `WebSearch` side-channel described above.
+
 ## Files Created
 
 The plugin creates these files in its directory (gitignored):
