@@ -30,7 +30,7 @@ This means the trust model is similar to clicking links in any search results—
 - **Auto-approves** WebFetch for URLs returned by WebSearch
 - **Handles redirects** automatically (approves redirect targets)
 - **Configurable expiration** (default: 30 minutes)
-- **Domain mode** option to approve entire domains from search results
+- **Configurable match mode**: exact (default), prefix, or domain-level matching
 - **Mode-aware behavior**:
   - **Autonomous mode**: Blocks non-search URLs (for scripted/headless use)
   - **Interactive mode**: Prompts for non-search URLs (preserves manual approval)
@@ -50,9 +50,11 @@ This means the trust model is similar to clicking links in any search results—
 Copy `.env.example` to `.env` and customize:
 
 ```bash
-# Domain mode: if "true", allow any URL from domains seen in search results
-# If "false" (default), only exact URLs from search results are allowed
-URL_ALLOWLIST_DOMAIN_MODE=false
+# Match mode controls how strictly URLs are compared to search results:
+#   exact  (default) - URL must match exactly, no additions allowed
+#   prefix - URL can have additional path segments, query strings, or fragments appended
+#   domain - any URL from an approved domain is allowed
+URL_ALLOWLIST_MATCH_MODE=exact
 
 # How long URLs/domains stay valid (in minutes)
 # Default: 30 minutes
@@ -61,9 +63,15 @@ URL_ALLOWLIST_EXPIRE_MINUTES=30
 
 You can also set these as environment variables instead of using a `.env` file.
 
-### Domain Mode
+### Match Mode
 
-When `URL_ALLOWLIST_DOMAIN_MODE=true`, a search result from `https://example.com/article/123` will allow fetching any URL from `example.com`, not just that specific article. This is more lenient but convenient when you want to browse around a discovered site.
+Controls how the plugin compares a requested URL against the approved list:
+
+| Mode | Behaviour | Example |
+|------|-----------|---------|
+| `exact` (default) | URL must match exactly. Blocks appended query strings, fragments, or path segments. Most secure—prevents data exfiltration via appended parameters. | `https://example.com/article/123` matches only that exact URL |
+| `prefix` | The approved URL is treated as a prefix. Allows additional path segments, query strings, or fragments. | `https://example.com/article/123` also matches `https://example.com/article/123?page=2` |
+| `domain` | Any URL on the same domain is allowed. Most lenient—convenient when browsing around a discovered site. | `https://example.com/article/123` allows any URL on `example.com` |
 
 ### Expiration
 

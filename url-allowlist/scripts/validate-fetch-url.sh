@@ -6,7 +6,7 @@
 #   - default/other: Prompt user to approve non-search URLs (for interactive mode)
 #
 # Configuration (via .env file or environment variables):
-#   URL_ALLOWLIST_DOMAIN_MODE - if "true", allow any URL from approved domains
+#   URL_ALLOWLIST_MATCH_MODE - "exact" (default), "prefix", or "domain"
 #   URL_ALLOWLIST_EXPIRE_MINUTES - how long URLs stay valid (default: 30)
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -20,7 +20,7 @@ if [ -f "$ENV_FILE" ]; then
 fi
 
 # Defaults
-: "${URL_ALLOWLIST_DOMAIN_MODE:=false}"
+: "${URL_ALLOWLIST_MATCH_MODE:=exact}"
 : "${URL_ALLOWLIST_EXPIRE_MINUTES:=30}"
 
 # Convert minutes to seconds
@@ -100,51 +100,46 @@ while IFS=' ' read -r timestamp url_entry; do
         continue
     fi
 
-    if [ "$URL_ALLOWLIST_DOMAIN_MODE" = "true" ]; then
-        # Domain mode: check if domains match
-        ENTRY_DOMAIN=$(extract_domain "$url_entry")
-        if [ "$REQUEST_DOMAIN" = "$ENTRY_DOMAIN" ]; then
-            FOUND=true
-            break
-        fi
-    else
-        # Exact mode: check if URL matches (exact match or starts with approved URL)
-        if [ "$URL" = "$url_entry" ] || [[ "$URL" == "$url_entry"* ]]; then
-            FOUND=true
-            break
-        fi
-    fi
+    case "$URL_ALLOWLIST_MATCH_MODE" in
+        domain)
+            # Domain mode: check if domains match
+            ENTRY_DOMAIN=$(extract_domain "$url_entry")
+            if [ "$REQUEST_DOMAIN" = "$ENTRY_DOMAIN" ]; then
+                FOUND=true
+                break
+            fi
+            ;;
+        prefix)
+            # Prefix mode: approved URL can be a prefix of the requested URL
+            if [ "$URL" = "$url_entry" ] || [[ "$URL" == "$url_entry"* ]]; then
+                FOUND=true
+                break
+            fi
+            ;;
+        *)
+            # Exact mode (default): URL must match exactly
+            if [ "$URL" = "$url_entry" ]; then
+                FOUND=true
+                break
+            fi
+            ;;
+    esac
 done < "$APPROVED_URLS_FILE"
 
 if [ "$FOUND" = true ]; then
     # URL is approved - explicitly allow
-    if [ "$URL_ALLOWLIST_DOMAIN_MODE" = "true" ]; then
-        echo "[$(date -Iseconds)] [$PERMISSION_MODE] Allowed fetch to: $URL (domain $REQUEST_DOMAIN approved)" >> "$LOG_FILE"
-        jq -n --arg domain "$REQUEST_DOMAIN" '{
-            hookSpecificOutput: {
-                hookEventName: "PreToolUse",
-                permissionDecision: "allow",
-                permissionDecisionReason: ("Domain " + $domain + " found in recent WebSearch results")
-            }
-        }'
-    else
-        echo "[$(date -Iseconds)] [$PERMISSION_MODE] Allowed fetch to: $URL" >> "$LOG_FILE"
-        jq -n '{
-            hookSpecificOutput: {
-                hookEventName: "PreToolUse",
-                permissionDecision: "allow",
-                permissionDecisionReason: "URL found in recent WebSearch results"
-            }
-        }'
-    fi
+    echo "[$(date -Iseconds)] [$PERMISSION_MODE] Allowed fetch (${URL_ALLOWLIST_MATCH_MODE}) to: $URL" >> "$LOG_FILE"
+    jq -n --arg mode "$URL_ALLOWLIST_MATCH_MODE" '{
+        hookSpecificOutput: {
+            hookEventName: "PreToolUse",
+            permissionDecision: "allow",
+            permissionDecisionReason: ("URL approved via " + $mode + " match against recent WebSearch results")
+        }
+    }'
     exit 0
 else
     # URL not approved
-    echo "[$(date -Iseconds)] [$PERMISSION_MODE] Not in search results: $URL" >> "$LOG_FILE"
-    if [ "$URL_ALLOWLIST_DOMAIN_MODE" = "true" ]; then
-        deny_or_ask "Domain $REQUEST_DOMAIN not found in recent WebSearch results. Please search for this domain first."
-    else
-        deny_or_ask "URL not found in recent WebSearch results. Please search for this URL first."
-    fi
+    echo "[$(date -Iseconds)] [$PERMISSION_MODE] Not in search results (${URL_ALLOWLIST_MATCH_MODE}): $URL" >> "$LOG_FILE"
+    deny_or_ask "URL not found in recent WebSearch results (match mode: ${URL_ALLOWLIST_MATCH_MODE}). Please search for this URL first."
     exit 0
 fi
