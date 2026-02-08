@@ -27,9 +27,9 @@ Determine the scenario based on whether current branch equals the default branch
 **Scenario B - On feature branch (worktree):**
 1. Stage relevant changes: `git add <files>`
 2. Commit with appropriate message
-3. `git rebase <default-branch>`
-4. `git -C <main-repo-directory> merge --ff-only <current-branch>`
-5. `git -C <main-repo-directory> pull --rebase`
+3. `git -C <main-repo-directory> pull --rebase` (update trunk FIRST so rebase uses latest)
+4. `git rebase <default-branch>` (replay feature commits on updated trunk)
+5. `git -C <main-repo-directory> merge --ff-only <current-branch>`
 6. `git -C <main-repo-directory> push`
 7. Ask the user what to do with this worktree (use AskUserQuestion):
    - **"Delete worktree"** — Remove the worktree and delete the branch:
