@@ -29,6 +29,12 @@
       "source": "./code-review-local",
       "description": "Code review local uncommitted or unpushed changes with multi-agent confidence scoring",
       "version": "1.0.0"
+    },
+    {
+      "name": "web-researcher",
+      "source": "./web-researcher",
+      "description": "Deep web research agent that finds and synthesizes information from multiple sources",
+      "version": "1.0.0"
     }
   ]
 }
