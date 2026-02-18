@@ -1,6 +1,6 @@
 # Claude Code Plugins
 
-A collection of Claude Code plugins for security, git workflows, and code review. Designed for trunk-based development.
+A collection of Claude Code plugins for security, git workflows, code review, and web research. Designed for trunk-based development.
 
 ## Plugins
 
@@ -59,6 +59,18 @@ Automated code review for local uncommitted or unpushed changes. Designed for tr
 
 **Requirements:** Git
 
+### [web-researcher](./web-researcher/)
+
+Deep web research agent that finds and synthesizes information from multiple authoritative sources. Automatically triggered when questions benefit from current web sources.
+
+**How it works:**
+- Executes strategic web searches from multiple angles
+- Fetches and analyzes content from authoritative sources
+- Synthesizes findings with quotes, links, and source attribution
+- Notes gaps, conflicts, and version-specific details
+
+**Agent:** `web-researcher` (auto-triggered by Claude when web research is needed)
+
 ## Installation
 
 1. Add the marketplace:
@@ -72,6 +84,7 @@ Automated code review for local uncommitted or unpushed changes. Designed for tr
 /plugin install url-allowlist@danielbodart-plugins
 /plugin install commit-commands@danielbodart-plugins
 /plugin install code-review@danielbodart-plugins
+/plugin install web-researcher@danielbodart-plugins
 ```
 
 ## Local Testing
@@ -82,6 +95,7 @@ claude --plugin-dir ./graphical-sudo
 claude --plugin-dir ./url-allowlist
 claude --plugin-dir ./commit-push-trunk
 claude --plugin-dir ./code-review-local
+claude --plugin-dir ./web-researcher
 ```
 
 ## License
