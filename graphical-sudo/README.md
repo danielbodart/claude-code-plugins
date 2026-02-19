@@ -50,6 +50,10 @@ On Arch-based systems:
 sudo pacman -S jq zenity
 ```
 
+## Known Issues
+
+This plugin uses `updatedInput` in a PreToolUse hook to rewrite `sudo` commands. There is a [bug in Claude Code](https://github.com/anthropics/claude-code/issues/15897) where `updatedInput` is silently ignored when multiple PreToolUse hooks fire in parallel. If another installed plugin registers a PreToolUse hook (e.g. hookify), this plugin will stop working.
+
 ## Limitations
 
 - Requires a graphical session (won't work over pure SSH)
