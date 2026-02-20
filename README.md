@@ -71,6 +71,16 @@ Deep web research agent that finds and synthesizes information from multiple aut
 
 **Agent:** `web-researcher` (auto-triggered by Claude when web research is needed)
 
+### [notification-sound](./notification-sound/)
+
+Plays a notification sound when Claude has been waiting for your input for over a minute. Useful for long-running tasks where you've switched to another window.
+
+**How it works:**
+- Uses the `Notification` hook with `idle_prompt` matcher (fires after ~60s idle)
+- Plays `/usr/share/sounds/freedesktop/stereo/complete.oga` via `paplay`
+
+**Requirements:** `paplay` (from `pulseaudio-utils`, pre-installed on Ubuntu/Debian desktops), `sound-theme-freedesktop`
+
 ## Installation
 
 1. Add the marketplace:
@@ -85,6 +95,7 @@ Deep web research agent that finds and synthesizes information from multiple aut
 /plugin install commit-commands@danielbodart-plugins
 /plugin install code-review@danielbodart-plugins
 /plugin install web-researcher@danielbodart-plugins
+/plugin install notification-sound@danielbodart-plugins
 ```
 
 ## Local Testing
@@ -96,6 +107,7 @@ claude --plugin-dir ./url-allowlist
 claude --plugin-dir ./commit-push-trunk
 claude --plugin-dir ./code-review-local
 claude --plugin-dir ./web-researcher
+claude --plugin-dir ./notification-sound
 ```
 
 ## License

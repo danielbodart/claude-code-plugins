@@ -35,6 +35,12 @@
       "source": "./web-researcher",
       "description": "Deep web research agent that finds and synthesizes information from multiple sources",
       "version": "1.0.0"
+    },
+    {
+      "name": "notification-sound",
+      "source": "./notification-sound",
+      "description": "Plays a notification sound when Claude has been waiting for your input for over a minute",
+      "version": "1.0.0"
     }
   ]
 }
