@@ -23,6 +23,7 @@ Commits your changes and pushes directly to trunk, handling both main repository
 2. Determines if you're on trunk or a feature branch (worktree)
 3. Stages and commits with an appropriate message
 4. Rebases and pushes while maintaining linear history
+5. Detects the repo's CI/CD system and monitors the triggered build to completion
 
 ## Scenarios
 
@@ -67,7 +68,19 @@ git -C <main-repo> push
 - **Linear history**: Always uses `--ff-only` for merges and `--rebase` for pulls
 - **Worktree support**: Automatically detects worktrees and handles cross-repo operations
 - **Smart commits**: Generates meaningful commit messages based on your changes
+- **CI monitoring**: Detects GitHub Actions or CircleCI and watches the triggered build to completion, reporting pass/fail
 - **No cleanup**: Leaves worktree/branch cleanup to separate operations
+
+## CI/CD Monitoring
+
+After pushing, the command detects the repo's CI system by looking for config files at the repo root:
+
+- `.github/workflows/*.yml` → **GitHub Actions** (watched via `gh run watch --exit-status`)
+- `.circleci/config.yml` → **CircleCI** (polled via the `circleci` CLI or API)
+
+If **both** are present, the command warns you — that usually means a repo mid-transition between CI systems, where one build is disabled and the other active. Recommended fix: remove the unused config. It then monitors whichever build actually ran.
+
+If **neither** is present, it reports that no CI is configured and stops. Missing CLI/token → it gives you the URL to watch manually instead of blocking.
 
 ## Requirements
 
