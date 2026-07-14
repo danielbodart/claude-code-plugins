@@ -41,6 +41,12 @@
       "source": "./notification-sound",
       "description": "Plays a notification sound when Claude has been waiting for your input for over a minute",
       "version": "1.0.31"
+    },
+    {
+      "name": "statusline",
+      "source": "./statusline",
+      "description": "A status line showing directory, git branch, context window usage, and Claude subscription quota (5-hour + weekly)",
+      "version": "1.0.31"
     }
   ]
 }

@@ -81,6 +81,18 @@ Plays a notification sound when Claude has been waiting for your input for over 
 
 **Requirements:** `paplay` (from `pulseaudio-utils`, pre-installed on Ubuntu/Debian desktops), `sound-theme-freedesktop`
 
+### [statusline](./statusline/)
+
+A status line showing directory, git branch, context window usage (`C`), and Claude subscription quota — rolling 5-hour (`5`) and weekly (`W`) — plus the model.
+
+**How it works:**
+- Not a classic auto-wiring plugin: a `plugin.json` has no `statusLine` field, so you run `/install-statusline` once to merge it into `~/.claude/settings.json`
+- The command wraps a deterministic `install.sh` that preserves all other settings and **won't overwrite a custom status line** without `--force`
+- Installed as a plugin, it runs in place and **auto-updates with the plugin**; run standalone, it copies itself into `~/.claude`
+- Quota bars come from the Anthropic OAuth usage endpoint, cached to `~/.claude/quota-cache.json` and refreshed in the background every 15 min (no daemon)
+
+**Requirements:** `jq`, `curl`, and an OAuth/subscription login (quota bars show `--%` under an `ANTHROPIC_API_KEY` setup)
+
 ## Installation
 
 1. Add the marketplace:
@@ -96,7 +108,10 @@ Plays a notification sound when Claude has been waiting for your input for over 
 /plugin install code-review@danielbodart-plugins
 /plugin install web-researcher@danielbodart-plugins
 /plugin install notification-sound@danielbodart-plugins
+/plugin install statusline@danielbodart-plugins
 ```
+
+For `statusline`, also run `/install-statusline` once after enabling it (it can't auto-wire — see [its README](./statusline/)).
 
 ## Local Testing
 
@@ -108,6 +123,7 @@ claude --plugin-dir ./commit-push-trunk
 claude --plugin-dir ./code-review-local
 claude --plugin-dir ./web-researcher
 claude --plugin-dir ./notification-sound
+claude --plugin-dir ./statusline
 ```
 
 ## License
