@@ -85,6 +85,10 @@ Plays a notification sound when Claude has been waiting for your input for over 
 
 A status line showing directory, git branch, context window usage (`C`), and Claude subscription quota — rolling 5-hour (`5`) and weekly (`W`) — plus the model.
 
+```
+~/Projects/foo │ main │ C:[□□□□□□□□] 0% │ 5:[■■■■□□□□] 50% │ W:[■■■■■■■■] 100% │ Opus 4.8
+```
+
 **How it works:**
 - Not a classic auto-wiring plugin: a `plugin.json` has no `statusLine` field, so you run `/install-statusline` once to merge it into `~/.claude/settings.json`
 - The command wraps a deterministic `install.sh` that preserves all other settings and **won't overwrite a custom status line** without `--force`

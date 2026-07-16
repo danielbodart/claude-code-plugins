@@ -3,7 +3,7 @@
 A Claude Code status line that shows, left to right:
 
 ```
-~/Projects/foo │ main │ C:[■□□□□□□□] 12% │ 5:[□□□□□□□□] 0% │ W:[■■■■■■■■] 100% │ Opus 4.8
+~/Projects/foo │ main │ C:[□□□□□□□□] 0% │ 5:[■■■■□□□□] 50% │ W:[■■■■■■■■] 100% │ Opus 4.8
 ```
 
 - **directory** — working dir, `~`-abbreviated
