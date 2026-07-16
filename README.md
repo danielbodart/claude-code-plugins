@@ -90,9 +90,8 @@ A status line showing directory, git branch, context window usage (`C`), and Cla
 ```
 
 **How it works:**
-- Auto-installs on first session via a `SessionStart` hook when no custom statusLine exists; run `/install-statusline --force` to replace one
-- The command wraps a deterministic `install.sh` that preserves all other settings and **won't overwrite a custom status line** without `--force`
-- Installed as a plugin, it runs in place and **auto-updates with the plugin**; run standalone, it copies itself into `~/.claude`
+- Enable the plugin and it just works — a `SessionStart` hook sets it up for you, preserving all other settings and **never overwriting a custom status line**
+- Already have your own status line? Run `/install-statusline --force` to replace it (or `/install-statusline` if the hook didn't pick it up)
 - Quota bars come from the Anthropic OAuth usage endpoint, cached to `~/.claude/quota-cache.json` and refreshed in the background every 15 min (no daemon)
 
 **Requirements:** `jq`, `curl`, and an OAuth/subscription login (quota bars show `--%` under an `ANTHROPIC_API_KEY` setup)

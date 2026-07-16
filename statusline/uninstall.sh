@@ -67,9 +67,10 @@ else
   say "✓ statusLine removed from $settings"
 fi
 
-# --- Clean up copied scripts and cache ---------------------------------------
+# --- Clean up the installed script (symlink or copy) and cache ---------------
+# quota-refresh.sh is legacy (older copy-mode installs); remove it if present.
 for f in "$claude_dir/statusline.sh" "$claude_dir/quota-refresh.sh" "$claude_dir/quota-cache.json"; do
-  if [ -f "$f" ]; then
+  if [ -e "$f" ] || [ -L "$f" ]; then
     run "rm -f \"$f\""
     say "✓ removed $f"
   fi
