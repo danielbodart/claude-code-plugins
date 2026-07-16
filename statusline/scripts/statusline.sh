@@ -118,8 +118,8 @@ fi
 # If the cache is far too old, treat values as unknown so we don't show stale %.
 if [ "$age" -ge "$(( stale_after * 4 ))" ]; then d_pct=""; w_pct=""; fi
 
-d_bar=$(make_bar "5" "$d_pct" "$blue")
-w_bar=$(make_bar "W" "$w_pct" "$blue")
+d_bar=$(make_bar "5" "$d_pct" "$cyan")
+w_bar=$(make_bar "W" "$w_pct" "$magenta")
 
 # ---------- Segment 5: model ----------
 [ -z "$model_name" ] && model_name="?"
