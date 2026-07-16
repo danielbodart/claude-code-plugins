@@ -25,15 +25,19 @@ there is **no manifest field that installs a `statusLine`** — that key lives i
 
 ## Install
 
-Enable the plugin, then run the command:
+Enable the plugin — it auto-installs on your next session start:
 
 ```
 /plugin install statusline@danielbodart-plugins
-/install-statusline
 ```
 
-`/install-statusline` inspects any existing status line first and **asks before
-overwriting** a custom one.
+The plugin uses a `SessionStart` hook to configure the status line automatically
+when no `statusLine` is set in `settings.json`. If you already have a custom
+status line, it leaves yours untouched — run `/install-statusline --force` to
+replace it.
+
+`/install-statusline` can also be run manually at any time; it inspects any
+existing status line first and **asks before overwriting** a custom one.
 
 ### Or install without Claude
 
@@ -97,10 +101,15 @@ is why the middle bar is labelled `5`, not `D`.
 |------|------|
 | `scripts/statusline.sh` | The status line renderer (referenced by settings.json). |
 | `scripts/quota-refresh.sh` | Fetches subscription quota → `quota-cache.json`. |
+| `scripts/auto-install.sh` | SessionStart hook — auto-installs if no statusLine is set. |
 | `install.sh` | Deterministic, clobber-safe installer. |
+| `uninstall.sh` | Removes statusLine from settings.json and cleans up. |
 | `commands/install-statusline.md` | `/install-statusline` — wraps `install.sh` with conflict-checking. |
+| `commands/uninstall-statusline.md` | `/uninstall-statusline` — wraps `uninstall.sh`. |
 
 ## Uninstall
 
-Remove the `statusLine` key from `~/.claude/settings.json` and delete
+Run `/uninstall-statusline` to remove the status line from `settings.json` and
+clean up any copied scripts and quota cache. Or uninstall manually: remove the
+`statusLine` key from `~/.claude/settings.json` and delete
 `~/.claude/statusline.sh`, `~/.claude/quota-refresh.sh`, `~/.claude/quota-cache.json`.

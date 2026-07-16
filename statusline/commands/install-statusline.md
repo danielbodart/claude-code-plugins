@@ -1,12 +1,16 @@
 ---
 allowed-tools: Bash(${CLAUDE_PLUGIN_ROOT}/install.sh:*), Bash(jq:*), Read
 description: Install the statusline (directory, branch, context, and subscription quota) into ~/.claude
+args: "[--force]"
 ---
 
 Install this plugin's status line into `~/.claude`. The heavy lifting is done by
 the deterministic engine at `${CLAUDE_PLUGIN_ROOT}/install.sh`; your job is to be
 the safe, judgement-adding wrapper around it so an existing custom status line is
 never clobbered silently.
+
+**Arguments:** Pass `--force` to replace an existing custom status line without
+prompting (e.g. `/install-statusline --force`).
 
 ## Context
 
@@ -24,14 +28,18 @@ never clobbered silently.
    bash "${CLAUDE_PLUGIN_ROOT}/install.sh"
    ```
 
-3. **If it is some OTHER command** (the user has a custom status line): do NOT
-   overwrite it blind. Show the user their existing command and this plugin's
-   command, explain that installing will replace theirs, and ask whether to
-   proceed. Only if they confirm, run:
-   ```
-   bash "${CLAUDE_PLUGIN_ROOT}/install.sh" --force
-   ```
-   Otherwise stop and leave their config untouched.
+3. **If it is some OTHER command** (the user has a custom status line):
+   - **If `--force` was passed**: proceed directly:
+     ```
+     bash "${CLAUDE_PLUGIN_ROOT}/install.sh" --force
+     ```
+   - **Otherwise**: do NOT overwrite it blind. Show the user their existing
+     command and this plugin's command, explain that installing will replace
+     theirs, and ask whether to proceed. Only if they confirm, run:
+     ```
+     bash "${CLAUDE_PLUGIN_ROOT}/install.sh" --force
+     ```
+     Otherwise stop and leave their config untouched.
 
 4. Report the result. Mention that:
    - The status line shows: directory · git branch · `C` context · `5` five-hour

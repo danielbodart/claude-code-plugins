@@ -9,5 +9,6 @@
   "repository": "https://github.com/danielbodart/claude-code-plugins",
   "license": "MIT",
   "keywords": ["statusline", "quota", "usage", "context", "git"],
-  "commands": "./commands"
+  "commands": "./commands",
+  "hooks": "./hooks.json"
 }

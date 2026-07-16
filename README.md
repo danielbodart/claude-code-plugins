@@ -90,7 +90,7 @@ A status line showing directory, git branch, context window usage (`C`), and Cla
 ```
 
 **How it works:**
-- Not a classic auto-wiring plugin: a `plugin.json` has no `statusLine` field, so you run `/install-statusline` once to merge it into `~/.claude/settings.json`
+- Auto-installs on first session via a `SessionStart` hook when no custom statusLine exists; run `/install-statusline --force` to replace one
 - The command wraps a deterministic `install.sh` that preserves all other settings and **won't overwrite a custom status line** without `--force`
 - Installed as a plugin, it runs in place and **auto-updates with the plugin**; run standalone, it copies itself into `~/.claude`
 - Quota bars come from the Anthropic OAuth usage endpoint, cached to `~/.claude/quota-cache.json` and refreshed in the background every 15 min (no daemon)
@@ -115,7 +115,7 @@ A status line showing directory, git branch, context window usage (`C`), and Cla
 /plugin install statusline@danielbodart-plugins
 ```
 
-For `statusline`, also run `/install-statusline` once after enabling it (it can't auto-wire — see [its README](./statusline/)).
+`statusline` auto-installs on your next session start. Run `/uninstall-statusline` to remove it (see [its README](./statusline/)).
 
 ## Local Testing
 
