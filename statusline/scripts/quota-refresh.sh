@@ -21,10 +21,18 @@ tmp="$cache.tmp.$$"
 
 command -v jq   >/dev/null 2>&1 || exit 0
 command -v curl >/dev/null 2>&1 || exit 0
-[ -f "$creds" ] || exit 0
 
-tok=$(jq -r '.claudeAiOauth.accessToken // empty' "$creds" 2>/dev/null)
-[ -z "$tok" ] && exit 0
+# Try credentials file first (Linux), then macOS Keychain
+if [ -f "$creds" ]; then
+  tok=$(jq -r '.claudeAiOauth.accessToken // empty' "$creds" 2>/dev/null)
+elif command -v security >/dev/null 2>&1; then
+  keychain_json=$(security find-generic-password -s "Claude Code-credentials" -w 2>/dev/null) || true
+  if [ -n "${keychain_json:-}" ]; then
+    tok=$(printf '%s' "$keychain_json" | jq -r '.claudeAiOauth.accessToken // empty' 2>/dev/null)
+  fi
+  unset keychain_json
+fi
+[ -z "${tok:-}" ] && exit 0
 
 body="$tmp.body"
 code=$(curl -sS -m 15 -o "$body" -w '%{http_code}' \
