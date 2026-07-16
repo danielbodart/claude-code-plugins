@@ -21,15 +21,24 @@ jobs:
         run: |
           VERSION="1.0.$(git rev-list --count HEAD)"
           echo "Version: $VERSION"
+
+          # Update marketplace.json
           jq --arg v "$VERSION" '.plugins[].version = $v' \
             .claude-plugin/marketplace.json > tmp.json
           mv tmp.json .claude-plugin/marketplace.json
 
+          # Update each plugin's own plugin.json
+          for pj in */.claude-plugin/plugin.json; do
+            [ -f "$pj" ] || continue
+            jq --arg v "$VERSION" '.version = $v' "$pj" > tmp.json
+            mv tmp.json "$pj"
+          done
+
       - name: Commit if changed
         run: |
-          git diff --quiet .claude-plugin/marketplace.json && exit 0
+          git diff --quiet && exit 0
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .claude-plugin/marketplace.json
+          git add .claude-plugin/marketplace.json */.claude-plugin/plugin.json
           git commit -m "chore: stamp version [skip ci]"
           git push
