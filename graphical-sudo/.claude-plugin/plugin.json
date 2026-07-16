@@ -1,6 +1,6 @@
 {
   "name": "graphical-sudo",
-  "version": "1.0.0",
+  "version": "1.0.45",
   "description": "Enables graphical password prompts for sudo commands on Linux GTK desktops using zenity",
   "author": {
     "name": "Daniel Worthington-Bodart",
@@ -8,6 +8,13 @@
   },
   "repository": "https://github.com/danielbodart/claude-code-plugins",
   "license": "MIT",
-  "keywords": ["linux", "sudo", "zenity", "graphical", "gnome", "security"],
+  "keywords": [
+    "linux",
+    "sudo",
+    "zenity",
+    "graphical",
+    "gnome",
+    "security"
+  ],
   "hooks": "./hooks.json"
 }

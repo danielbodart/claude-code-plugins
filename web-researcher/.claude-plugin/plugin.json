@@ -1,6 +1,6 @@
 {
   "name": "web-researcher",
-  "version": "1.0.0",
+  "version": "1.0.45",
   "description": "Deep web research agent that finds and synthesizes information from multiple sources",
   "author": {
     "name": "Daniel Worthington-Bodart",
@@ -8,5 +8,11 @@
   },
   "repository": "https://github.com/danielbodart/claude-code-plugins",
   "license": "MIT",
-  "keywords": ["research", "web", "search", "fetch", "synthesis"]
+  "keywords": [
+    "research",
+    "web",
+    "search",
+    "fetch",
+    "synthesis"
+  ]
 }

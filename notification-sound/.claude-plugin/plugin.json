@@ -1,6 +1,6 @@
 {
   "name": "notification-sound",
-  "version": "1.0.0",
+  "version": "1.0.45",
   "description": "Plays a notification sound on any Claude Code notification",
   "author": {
     "name": "Daniel Worthington-Bodart",
@@ -8,6 +8,11 @@
   },
   "repository": "https://github.com/danielbodart/claude-code-plugins",
   "license": "MIT",
-  "keywords": ["linux", "notification", "sound", "audio"],
+  "keywords": [
+    "linux",
+    "notification",
+    "sound",
+    "audio"
+  ],
   "hooks": "./hooks.json"
 }
