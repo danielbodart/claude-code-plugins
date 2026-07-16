@@ -56,10 +56,18 @@ make_bar() {
 }
 
 # ---------- Segment 1: directory (~-abbreviated) ----------
+# Detect Claude Code worktrees: .claude/worktrees/<name> → show project root
+is_worktree=0
 dir_display="$dir"
 case "$dir" in
+  */.claude/worktrees/*)
+    is_worktree=1
+    dir_display="${dir%%/.claude/worktrees/*}"
+    ;;
+esac
+case "$dir_display" in
   "$HOME") dir_display="~" ;;
-  "$HOME"/*) dir_display="~${dir#"$HOME"}" ;;
+  "$HOME"/*) dir_display="~${dir_display#"$HOME"}" ;;
 esac
 [ -z "$dir_display" ] && dir_display="?"
 
@@ -69,6 +77,10 @@ if [ -n "$dir" ] && [ -d "$dir" ]; then
   branch=$(git --no-optional-locks -C "$dir" branch --show-current 2>/dev/null)
   [ -z "$branch" ] && branch=$(git --no-optional-locks -C "$dir" rev-parse --abbrev-ref HEAD 2>/dev/null)
   [ "$branch" = "HEAD" ] && branch=""
+fi
+# In a worktree, strip the "worktree-" prefix — the (worktree) label covers it
+if [ "$is_worktree" -eq 1 ]; then
+  branch="${branch#worktree-}"
 fi
 
 # ---------- Segment 3: context usage bar ----------
@@ -126,6 +138,7 @@ w_bar=$(make_bar "W" "$w_pct" "$magenta")
 
 # ---------- Assemble (printf %s: no format-string interpretation of % or bytes) ----------
 out="${cyan}${dir_display}${reset}"
+[ "$is_worktree" -eq 1 ] && out="${out} ${dim}(worktree)${reset}"
 [ -n "$branch" ] && out="${out}${sep}${green}${branch}${reset}"
 out="${out}${sep}${ctx_bar}${sep}${d_bar}${sep}${w_bar}${sep}${magenta}${model_name}${reset}"
 printf '%s\n' "$out"
