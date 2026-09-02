@@ -3,7 +3,7 @@
 A Claude Code status line that shows, left to right:
 
 ```
-~/Projects/foo │ main │ C:[□□□□□□□□] 0% │ 5:[■■■■□□□□] 50% │ W:[■■■■■■■■] 100% │ Opus 4.8
+~/Projects/foo │ main │ C:[□□□□□□□□] 0% │ 5:[■■■■□□□□] 50% │ W:[■■■■■■■■] 100% │ Opus 4.8 high
 ```
 
 - **directory** — working dir, `~`-abbreviated
@@ -11,7 +11,8 @@ A Claude Code status line that shows, left to right:
 - **`C`** — context window usage (green → yellow → red as it fills; uses the window size Claude Code reports, so 200k and 1M models are both right)
 - **`5`** — rolling **5-hour** subscription quota
 - **`W`** — **7-day** (weekly) subscription quota
-- **model** — display name
+- **model** — display name, followed by the reasoning effort level (`low` … `max`)
+  and a yellow `fast` tag when fast mode is on
 
 The `C` bar uses the `context_window` object Claude Code passes to the status
 line — the same figure `/context` shows — and only falls back to summing the

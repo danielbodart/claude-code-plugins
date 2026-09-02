@@ -4,7 +4,7 @@
 # Reads the statusLine JSON Claude Code passes on stdin
 # (https://code.claude.com/docs/en/statusline) and renders, left to right:
 #   <project dir (~-abbreviated)> [(worktree)] │ <git branch> │
-#   [context bar] │ [5-hour bar] │ [weekly bar] │ <model>
+#   [context bar] │ [5-hour bar] │ [weekly bar] │ <model> [effort] [fast]
 #
 # The only thing touched on disk is ~/.claude/quota-cache.json: a copy of the
 # last `rate_limits` seen, so the quota bars are populated from the first
@@ -55,7 +55,8 @@ render() {
   #                                    first API response; a window vanishes
   #                                    once it resets.
   #   worktree.*                     — present only inside a worktree session.
-  local project_dir="" cwd="" model_name="" ctx_pct=""
+  #   effort.level / fast_mode       — live /effort and /fast state.
+  local project_dir="" cwd="" model_name="" ctx_pct="" effort="" fast_mode=""
   local d_pct="" w_pct="" d_resets="" w_resets="" wt_orig=""
   [ -n "$input" ] && eval "$(printf '%s' "$input" | jq -r '
     @sh "project_dir=\(.workspace.project_dir // "")",
@@ -66,7 +67,9 @@ render() {
     @sh "w_pct=\(.rate_limits.seven_day.used_percentage // empty | floor)",
     @sh "d_resets=\(.rate_limits.five_hour.resets_at // empty | floor)",
     @sh "w_resets=\(.rate_limits.seven_day.resets_at // empty | floor)",
-    @sh "wt_orig=\(.worktree.original_cwd // "")"
+    @sh "wt_orig=\(.worktree.original_cwd // "")",
+    @sh "effort=\(.effort.level // "")",
+    @sh "fast_mode=\(.fast_mode // false)"
   ' 2>/dev/null)"
 
   local dir="${project_dir:-$cwd}"
@@ -124,14 +127,17 @@ render() {
   d_bar=$(make_bar "5" "$d_pct" "$cyan")
   w_bar=$(make_bar "W" "$w_pct" "$magenta")
 
-  # ---------- Segment 5: model ----------
+  # ---------- Segment 5: model, effort level, fast mode ----------
   [ -z "$model_name" ] && model_name="?"
+  local model_seg="${magenta}${model_name}${reset}"
+  [ -n "$effort" ] && model_seg="${model_seg} ${dim}${effort}${reset}"
+  [ "$fast_mode" = "true" ] && model_seg="${model_seg} ${yellow}fast${reset}"
 
   # ---------- Assemble (printf %s: no format-string interpretation of % or bytes) ----------
   local out="${cyan}${dir_display}${reset}"
   [ "$is_worktree" -eq 1 ] && out="${out} ${dim}(worktree)${reset}"
   [ -n "$branch" ] && out="${out}${sep}${green}${branch}${reset}"
-  out="${out}${sep}${ctx_bar}${sep}${d_bar}${sep}${w_bar}${sep}${magenta}${model_name}${reset}"
+  out="${out}${sep}${ctx_bar}${sep}${d_bar}${sep}${w_bar}${sep}${model_seg}"
   printf '%s\n' "$out"
 }
 
