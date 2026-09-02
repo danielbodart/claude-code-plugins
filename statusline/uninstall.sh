@@ -72,9 +72,13 @@ fi
 for f in "$claude_dir/statusline.sh" "$claude_dir/quota-refresh.sh" "$claude_dir/quota-cache.json"; do
   if [ -e "$f" ] || [ -L "$f" ]; then
     run "rm -f \"$f\""
-    say "✓ removed $f"
+    [ "$dry" -eq 0 ] && say "✓ removed $f"
   fi
 done
 
 say ""
-say "Done. The status line is removed on your next Claude Code render."
+if [ "$dry" -eq 1 ]; then
+  say "Dry run: nothing was changed."
+else
+  say "Done. The status line is removed on your next Claude Code render."
+fi
