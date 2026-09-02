@@ -25,7 +25,7 @@ sep=" ${dim}│${reset} "
 make_bar() {
   local label="$1" p="$2" base="${3:-$green}" w=8
   if [ -z "$p" ]; then
-    printf '%s' "${dim}${label}:[--------] --%${reset}"
+    printf '%s' "${dim}${label} □□□□□□□□ --%${reset}"
     return
   fi
   [ "$p" -gt 100 ] 2>/dev/null && p=100
@@ -38,7 +38,7 @@ make_bar() {
   local fs="" es="" i=0
   while [ "$i" -lt "$filled" ]; do fs="${fs}■"; i=$((i+1)); done
   i=0; while [ "$i" -lt "$e" ]; do es="${es}□"; i=$((i+1)); done
-  printf '%s' "${c}${label}:[${fs}${dim}${es}${c}] ${p}%${reset}"
+  printf '%s' "${c}${label} ${fs}${dim}${es}${c} ${p}%${reset}"
 }
 
 # =============================== renderer ===================================
