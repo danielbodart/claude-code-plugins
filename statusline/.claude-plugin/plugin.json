@@ -1,6 +1,6 @@
 {
   "name": "statusline",
-  "version": "1.0.55",
+  "version": "1.0.57",
   "description": "A status line showing directory, git branch, context window usage, and Claude subscription quota (5-hour + weekly)",
   "author": {
     "name": "Daniel Worthington-Bodart",

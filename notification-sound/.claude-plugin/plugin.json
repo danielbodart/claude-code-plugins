@@ -1,6 +1,6 @@
 {
   "name": "notification-sound",
-  "version": "1.0.55",
+  "version": "1.0.57",
   "description": "Plays a notification sound on any Claude Code notification",
   "author": {
     "name": "Daniel Worthington-Bodart",
