@@ -23,9 +23,9 @@ sep=" ${dim}│${reset} "
 # PCT empty -> greyed-out placeholder. Colour ramps green<50<yellow<80<red,
 # unless a fixed DEFAULT_COLOR is passed for the <50 band.
 make_bar() {
-  local label="$1" p="$2" base="${3:-$green}" w=8
+  local label="$1" p="$2" base="${3:-$green}" w=5
   if [ -z "$p" ]; then
-    printf '%s' "${dim}${label} □□□□□□□□ --%${reset}"
+    printf '%s' "${dim}${label} □□□□□ --%${reset}"
     return
   fi
   [ "$p" -gt 100 ] 2>/dev/null && p=100
