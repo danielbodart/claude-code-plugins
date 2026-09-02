@@ -83,10 +83,10 @@ Plays a notification sound when Claude has been waiting for your input for over 
 
 ### [statusline](./statusline/)
 
-A status line showing directory, git branch, context window usage (`C`), and Claude subscription quota — rolling 5-hour (`5`) and weekly (`W`) — plus the model, effort level and a `fast` tag when fast mode is on.
+A status line showing directory, git branch, context window usage (`ctx`), and Claude subscription quota — rolling 5-hour (`5h`) and weekly (`7d`) — plus the model, effort level and a `fast` tag when fast mode is on.
 
 ```
-~/Projects/foo │ main │ C □□□□□□□□ 0% │ 5 ■■■■□□□□ 50% │ W ■■■■■■■■ 100% │ Opus 4.8 high
+~/Projects/foo │ main │ ctx □□□□□□□□ 0% │ 5h ■■■■□□□□ 50% │ 7d ■■■■■■■■ 100% │ Opus 4.8 high
 ```
 
 **How it works:**

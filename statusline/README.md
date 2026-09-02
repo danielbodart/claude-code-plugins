@@ -3,21 +3,20 @@
 A Claude Code status line that shows, left to right:
 
 ```
-~/Projects/foo │ main │ C □□□□□□□□ 0% │ 5 ■■■■□□□□ 50% │ W ■■■■■■■■ 100% │ Opus 4.8 high
+~/Projects/foo │ main │ ctx □□□□□□□□ 0% │ 5h ■■■■□□□□ 50% │ 7d ■■■■■■■■ 100% │ Opus 4.8 high
 ```
 
 - **directory** — working dir, `~`-abbreviated
 - **git branch** — current branch (hidden outside a repo)
-- **`C`** — context window usage (green → yellow → red as it fills; uses the window size Claude Code reports, so 200k and 1M models are both right)
-- **`5`** — rolling **5-hour** subscription quota
-- **`W`** — **7-day** (weekly) subscription quota
+- **`ctx`** — context window usage (green → yellow → red as it fills; uses the window size Claude Code reports, so 200k and 1M models are both right)
+- **`5h`** — rolling **5-hour** subscription quota
+- **`7d`** — **7-day** (weekly) subscription quota
 - **model** — display name, followed by the reasoning effort level (`low` … `max`)
   and a yellow `fast` tag when fast mode is on
 
-The `C` bar uses the `context_window` object Claude Code passes to the status
-line — the same figure `/context` shows — and only falls back to summing the
-session transcript on old Claude Code builds that don't send it. The `5` and
-`W` bars come from your Claude subscription's rate-limit usage.
+The `ctx` bar uses the `context_window` object Claude Code passes to the status
+line — the same figure `/context` shows. The `5h` and `7d` bars come from the
+`rate_limits` it reports for your Claude subscription.
 
 ## Why this isn't a "classic" plugin
 
@@ -73,9 +72,9 @@ The status line is **one self-contained script** with no network access. It
 reads the JSON that Claude Code passes to every status line on stdin (see the
 [status line docs](https://code.claude.com/docs/en/statusline)) and uses:
 
-- `context_window.used_percentage` for the `C` bar — the same figure `/context`
+- `context_window.used_percentage` for the `ctx` bar — the same figure `/context`
   shows, computed against the real window size for the current model.
-- `rate_limits.five_hour` / `rate_limits.seven_day` for the `5` and `W` bars.
+- `rate_limits.five_hour` / `rate_limits.seven_day` for the `5h` and `7d` bars.
   Claude Code sends these for Claude.ai Pro and Max subscriptions.
 
 `rate_limits` only appears after a session's first API response, so the script
@@ -89,12 +88,12 @@ passes:
 ```
 
 Anthropic's shortest exposed window is 5-hourly (there is no daily figure), which
-is why the middle bar is labelled `5`, not `D`.
+is why the middle bar is `5h`, not a daily figure.
 
 ## Requirements
 
 - `jq` — JSON processor
-- A Claude.ai Pro/Max login for the `5`/`W` bars. With an `ANTHROPIC_API_KEY`
+- A Claude.ai Pro/Max login for the `5h`/`7d` bars. With an `ANTHROPIC_API_KEY`
   setup instead, those two bars show `--%` and everything else still works.
 
 ## Files

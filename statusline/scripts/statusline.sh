@@ -98,9 +98,9 @@ render() {
   [ "$is_worktree" -eq 1 ] && branch="${branch#worktree-}"
 
   # ---------- Segment 3: context usage bar ----------
-  local ctx_bar; ctx_bar=$(make_bar "C" "$ctx_pct" "$green")
+  local ctx_bar; ctx_bar=$(make_bar "ctx" "$ctx_pct" "$green")
 
-  # ---------- Segment 4: subscription quota (5-hour = 5, weekly = W) ----------
+  # ---------- Segment 4: subscription quota (5h = 5-hour, 7d = weekly) ----------
   # Persist rate_limits when present; otherwise read the last values back,
   # trusting each window until its resets_at passes.
   local quota_cache="$HOME/.claude/quota-cache.json"
@@ -124,8 +124,8 @@ render() {
   fi
 
   local d_bar w_bar
-  d_bar=$(make_bar "5" "$d_pct" "$cyan")
-  w_bar=$(make_bar "W" "$w_pct" "$magenta")
+  d_bar=$(make_bar "5h" "$d_pct" "$cyan")
+  w_bar=$(make_bar "7d" "$w_pct" "$magenta")
 
   # ---------- Segment 5: model, effort level, fast mode ----------
   [ -z "$model_name" ] && model_name="?"

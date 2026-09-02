@@ -42,13 +42,13 @@ prompting (e.g. `/install-statusline --force`).
      Otherwise stop and leave their config untouched.
 
 4. Report the result. Mention that:
-   - The status line shows: directory · git branch · `C` context · `5` five-hour
-     quota · `W` weekly quota · model.
+   - The status line shows: directory · git branch · `ctx` context · `5h` five-hour
+     quota · `7d` weekly quota · model · effort · `fast` when on.
    - When installed as a marketplace plugin, it runs **in place** from the plugin
      dir under `~/.claude/`, so it auto-updates whenever the plugin updates
      (nothing is copied). Run standalone, `install.sh` copies the scripts into
      `~/.claude` instead.
-   - The `5`/`W` quota bars read the `rate_limits` Claude Code reports for
+   - The `5h`/`7d` quota bars read the `rate_limits` Claude Code reports for
      Claude.ai Pro/Max subscriptions; with an `ANTHROPIC_API_KEY` setup they show
      `--%` and everything else still works.
    - It appears on the next render.
