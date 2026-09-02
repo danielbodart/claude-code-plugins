@@ -8,13 +8,15 @@ A Claude Code status line that shows, left to right:
 
 - **directory** — working dir, `~`-abbreviated
 - **git branch** — current branch (hidden outside a repo)
-- **`C`** — context window usage (green → yellow → red as it fills; 1M-aware)
+- **`C`** — context window usage (green → yellow → red as it fills; uses the window size Claude Code reports, so 200k and 1M models are both right)
 - **`5`** — rolling **5-hour** subscription quota
 - **`W`** — **7-day** (weekly) subscription quota
 - **model** — display name
 
-The `C` bar is read from the session transcript. The `5` and `W` bars come from
-your Claude subscription's rate-limit usage.
+The `C` bar uses the `context_window` object Claude Code passes to the status
+line — the same figure `/context` shows — and only falls back to summing the
+session transcript on old Claude Code builds that don't send it. The `5` and
+`W` bars come from your Claude subscription's rate-limit usage.
 
 ## Why this isn't a "classic" plugin
 

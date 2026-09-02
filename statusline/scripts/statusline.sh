@@ -108,13 +108,21 @@ render() {
   command -v jq >/dev/null 2>&1 && have_jq=1
 
   local project_dir="" cwd="" model_id="" model_name="" transcript_path=""
+  local ctx_pct="" window_size="" used_tokens=""
   if [ -n "$input" ] && [ "$have_jq" -eq 1 ]; then
+    # context_window.* is what Claude Code itself uses for /context and the
+    # auto-compact warning: the real window size for the current model (200k,
+    # 1M, …) and a pre-computed used %. Any field that is absent or null simply
+    # leaves the variable empty (empty interpolation drops the whole @sh line).
     eval "$(printf '%s' "$input" | jq -r '
       @sh "project_dir=\(.workspace.project_dir // "")",
       @sh "cwd=\(.cwd // "")",
       @sh "model_id=\(.model.id // "")",
       @sh "model_name=\(.model.display_name // "")",
-      @sh "transcript_path=\(.transcript_path // "")"
+      @sh "transcript_path=\(.transcript_path // "")",
+      @sh "ctx_pct=\(.context_window.used_percentage // empty | floor)",
+      @sh "window_size=\(.context_window.context_window_size // empty)",
+      @sh "used_tokens=\(.context_window.total_input_tokens // empty)"
     ' 2>/dev/null)"
   fi
 
@@ -148,18 +156,24 @@ render() {
   fi
 
   # ---------- Segment 3: context usage bar ----------
-  local window_size=200000
-  printf '%s' "$model_id" | grep -qi '1m' && window_size=1000000
-
-  local used_tokens=""
-  if [ "$have_jq" -eq 1 ] && [ -n "$transcript_path" ] && [ -f "$transcript_path" ]; then
-    used_tokens=$(jq -r '(.message.usage // .usage // empty)
-        | ((.input_tokens // 0) + (.cache_read_input_tokens // 0) + (.cache_creation_input_tokens // 0))' \
-      "$transcript_path" 2>/dev/null | grep -E '^[0-9]+$' | tail -n 1)
+  # Preferred source is context_window.used_percentage (parsed above). The
+  # fallbacks below only matter on Claude Code builds that predate that field:
+  #   1. total_input_tokens / context_window_size if only the % is missing
+  #   2. sum the last usage entry in the transcript, dividing by the reported
+  #      window size or, failing that, a guess from the model id — the guess
+  #      is the least reliable step (ids don't reliably encode the window).
+  if [ -z "$ctx_pct" ]; then
+    if [ -z "$used_tokens" ] && [ "$have_jq" -eq 1 ] && [ -n "$transcript_path" ] && [ -f "$transcript_path" ]; then
+      used_tokens=$(jq -r '(.message.usage // .usage // empty)
+          | ((.input_tokens // 0) + (.cache_read_input_tokens // 0) + (.cache_creation_input_tokens // 0))' \
+        "$transcript_path" 2>/dev/null | grep -E '^[0-9]+$' | tail -n 1)
+    fi
+    if ! [ "$window_size" -gt 0 ] 2>/dev/null; then
+      window_size=200000
+      printf '%s' "$model_id" | grep -qi '1m' && window_size=1000000
+    fi
+    [ -n "$used_tokens" ] && ctx_pct=$(( used_tokens * 100 / window_size ))
   fi
-
-  local ctx_pct=""
-  [ -n "$used_tokens" ] && ctx_pct=$(( used_tokens * 100 / window_size ))
   local ctx_bar; ctx_bar=$(make_bar "C" "$ctx_pct" "$green")
 
   # ---------- Segment 4: subscription quota (5-hour = 5, weekly = W) ----------
