@@ -84,7 +84,7 @@ passes:
 
 ```json
 { "five_hour": 23, "seven_day": 81,
-  "five_hour_resets": 1788346155, "seven_day_resets": 1788433155, "ts": 1788343155 }
+  "five_hour_resets": 1788346155, "seven_day_resets": 1788433155 }
 ```
 
 Anthropic's shortest exposed window is 5-hourly (there is no daily figure), which
@@ -92,7 +92,7 @@ is why the middle bar is labelled `5`, not `D`.
 
 ## Requirements
 
-- `jq` — JSON processor (without it every bar shows `--%`)
+- `jq` — JSON processor
 - A Claude.ai Pro/Max login for the `5`/`W` bars. With an `ANTHROPIC_API_KEY`
   setup instead, those two bars show `--%` and everything else still works.
 

@@ -1,17 +1,14 @@
 #!/bin/bash
-# Claude Code statusLine — self-contained (one file, no siblings, no network).
+# Claude Code statusLine — one file, no siblings, no network.
 #
-# Reads the statusLine JSON that Claude Code passes on stdin and renders,
-# left to right:
+# Reads the statusLine JSON Claude Code passes on stdin
+# (https://code.claude.com/docs/en/statusline) and renders, left to right:
 #   <project dir (~-abbreviated)> [(worktree)] │ <git branch> │
 #   [context bar] │ [5-hour bar] │ [weekly bar] │ <model>
 #
-# Everything comes from that JSON payload (see
-# https://code.claude.com/docs/en/statusline): the context bar from
-# `context_window`, the quota bars from `rate_limits`. The only thing this
-# script touches on disk is ~/.claude/quota-cache.json, a copy of the last
-# `rate_limits` seen, so the quota bars are populated from the first prompt
-# of a new session instead of waiting for its first API response.
+# The only thing touched on disk is ~/.claude/quota-cache.json: a copy of the
+# last `rate_limits` seen, so the quota bars are populated from the first
+# prompt of a new session instead of waiting for its first API response.
 #
 # Installed by the "statusline" plugin (danielbodart/claude-code-plugins).
 
@@ -19,7 +16,6 @@
 # renderer and make_bar can see them.
 esc=$'\033'; reset="${esc}[0m"; dim="${esc}[2m"
 cyan="${esc}[36m"; green="${esc}[92m"; yellow="${esc}[33m"; red="${esc}[31m"; magenta="${esc}[38;5;141m"
-blue="${esc}[38;5;39m"
 sep=" ${dim}│${reset} "
 
 # ---------- Helper: render a labelled percentage bar ----------
@@ -34,7 +30,7 @@ make_bar() {
   fi
   [ "$p" -gt 100 ] 2>/dev/null && p=100
   [ "$p" -lt 0 ] 2>/dev/null && p=0
-  local filled=$(( p * w / 100 )) empty c
+  local filled=$(( p * w / 100 )) c
   local e=$(( w - filled ))
   if   [ "$p" -ge 80 ]; then c="$red"
   elif [ "$p" -ge 50 ]; then c="$yellow"
@@ -48,59 +44,40 @@ make_bar() {
 # =============================== renderer ===================================
 render() {
   local input; input=$(cat 2>/dev/null)
-
-  local have_jq=0
-  command -v jq >/dev/null 2>&1 && have_jq=1
+  command -v jq >/dev/null 2>&1 || { printf '%s\n' "${dim}statusline: jq not found${reset}"; return; }
 
   # One jq pass pulls every field we use. A field that is absent or null
   # leaves its variable empty: an empty interpolation drops the whole @sh line.
-  #   context_window.*  — what /context shows: real window size for the model
-  #                       (200k, 1M, …) and a pre-computed used %.
-  #   rate_limits.*     — subscription 5-hour / 7-day usage, 0–100. Only sent
-  #                       for Pro/Max logins and only after the session's first
-  #                       API response; a window vanishes once it resets.
-  #   worktree.*        — present only inside a Claude Code worktree session.
-  local project_dir="" cwd="" model_id="" model_name="" transcript_path=""
-  local ctx_pct="" window_size="" used_tokens=""
+  #   context_window.used_percentage — what /context shows, against the real
+  #                                    window size for the current model.
+  #   rate_limits.*                  — subscription 5-hour / 7-day usage, 0–100.
+  #                                    Pro/Max only, only after the session's
+  #                                    first API response; a window vanishes
+  #                                    once it resets.
+  #   worktree.*                     — present only inside a worktree session.
+  local project_dir="" cwd="" model_name="" ctx_pct=""
   local d_pct="" w_pct="" d_resets="" w_resets="" wt_orig=""
-  if [ -n "$input" ] && [ "$have_jq" -eq 1 ]; then
-    eval "$(printf '%s' "$input" | jq -r '
-      @sh "project_dir=\(.workspace.project_dir // "")",
-      @sh "cwd=\(.cwd // "")",
-      @sh "model_id=\(.model.id // "")",
-      @sh "model_name=\(.model.display_name // "")",
-      @sh "transcript_path=\(.transcript_path // "")",
-      @sh "ctx_pct=\(.context_window.used_percentage // empty | floor)",
-      @sh "window_size=\(.context_window.context_window_size // empty)",
-      @sh "used_tokens=\(.context_window.total_input_tokens // empty)",
-      @sh "d_pct=\(.rate_limits.five_hour.used_percentage // empty | floor)",
-      @sh "w_pct=\(.rate_limits.seven_day.used_percentage // empty | floor)",
-      @sh "d_resets=\(.rate_limits.five_hour.resets_at // empty | floor)",
-      @sh "w_resets=\(.rate_limits.seven_day.resets_at // empty | floor)",
-      @sh "wt_orig=\(.worktree.original_cwd // "")"
-    ' 2>/dev/null)"
-  fi
+  [ -n "$input" ] && eval "$(printf '%s' "$input" | jq -r '
+    @sh "project_dir=\(.workspace.project_dir // "")",
+    @sh "cwd=\(.cwd // "")",
+    @sh "model_name=\(.model.display_name // "")",
+    @sh "ctx_pct=\(.context_window.used_percentage // empty | floor)",
+    @sh "d_pct=\(.rate_limits.five_hour.used_percentage // empty | floor)",
+    @sh "w_pct=\(.rate_limits.seven_day.used_percentage // empty | floor)",
+    @sh "d_resets=\(.rate_limits.five_hour.resets_at // empty | floor)",
+    @sh "w_resets=\(.rate_limits.seven_day.resets_at // empty | floor)",
+    @sh "wt_orig=\(.worktree.original_cwd // "")"
+  ' 2>/dev/null)"
 
   local dir="${project_dir:-$cwd}"
 
   # ---------- Segment 1: directory (~-abbreviated) ----------
-  # Inside a Claude Code worktree show the project root, not the worktree
-  # path. Prefer the .claude/worktrees/<name> layout (gives the exact root);
-  # otherwise fall back to the payload's worktree.original_cwd, which also
-  # covers hook-based worktrees living elsewhere.
+  # Inside a worktree session show where the user came from, not the worktree.
   local is_worktree=0 dir_display="$dir"
-  case "$dir" in
-    */.claude/worktrees/*)
-      is_worktree=1
-      dir_display="${dir%%/.claude/worktrees/*}"
-      ;;
-    *)
-      if [ -n "$wt_orig" ]; then
-        is_worktree=1
-        dir_display="$wt_orig"
-      fi
-      ;;
-  esac
+  if [ -n "$wt_orig" ]; then
+    is_worktree=1
+    dir_display="$wt_orig"
+  fi
   case "$dir_display" in
     "$HOME") dir_display="~" ;;
     "$HOME"/*) dir_display="~${dir_display#"$HOME"}" ;;
@@ -115,56 +92,32 @@ render() {
     [ "$branch" = "HEAD" ] && branch=""
   fi
   # In a worktree, strip the "worktree-" prefix — the (worktree) label covers it
-  if [ "$is_worktree" -eq 1 ]; then
-    branch="${branch#worktree-}"
-  fi
+  [ "$is_worktree" -eq 1 ] && branch="${branch#worktree-}"
 
   # ---------- Segment 3: context usage bar ----------
-  # Preferred source is context_window.used_percentage (parsed above). The
-  # fallbacks below only matter on Claude Code builds that predate that field:
-  #   1. total_input_tokens / context_window_size if only the % is missing
-  #   2. sum the last usage entry in the transcript, dividing by the reported
-  #      window size or, failing that, a guess from the model id — the guess
-  #      is the least reliable step (ids don't reliably encode the window).
-  if [ -z "$ctx_pct" ]; then
-    if [ -z "$used_tokens" ] && [ "$have_jq" -eq 1 ] && [ -n "$transcript_path" ] && [ -f "$transcript_path" ]; then
-      used_tokens=$(jq -r '(.message.usage // .usage // empty)
-          | ((.input_tokens // 0) + (.cache_read_input_tokens // 0) + (.cache_creation_input_tokens // 0))' \
-        "$transcript_path" 2>/dev/null | grep -E '^[0-9]+$' | tail -n 1)
-    fi
-    if ! [ "$window_size" -gt 0 ] 2>/dev/null; then
-      window_size=200000
-      printf '%s' "$model_id" | grep -qi '1m' && window_size=1000000
-    fi
-    [ -n "$used_tokens" ] && ctx_pct=$(( used_tokens * 100 / window_size ))
-  fi
   local ctx_bar; ctx_bar=$(make_bar "C" "$ctx_pct" "$green")
 
   # ---------- Segment 4: subscription quota (5-hour = 5, weekly = W) ----------
-  # rate_limits only arrives after the first API response of a session, so
-  # keep the last values seen in ~/.claude/quota-cache.json and read them back
-  # while the payload has none. A cached window is trusted until its
-  # resets_at passes (or for an hour if no reset time was recorded).
+  # Persist rate_limits when present; otherwise read the last values back,
+  # trusting each window until its resets_at passes.
   local quota_cache="$HOME/.claude/quota-cache.json"
-  local now_epoch; now_epoch=$(date +%s 2>/dev/null || echo 0)
+  local now_epoch; now_epoch=$(date +%s)
 
   if [ -n "$d_pct$w_pct" ]; then
     local tmp="$quota_cache.tmp.$$"
-    printf '{"five_hour":%s,"seven_day":%s,"five_hour_resets":%s,"seven_day_resets":%s,"ts":%s}\n' \
-      "${d_pct:-null}" "${w_pct:-null}" "${d_resets:-null}" "${w_resets:-null}" "$now_epoch" \
+    printf '{"five_hour":%s,"seven_day":%s,"five_hour_resets":%s,"seven_day_resets":%s}\n' \
+      "${d_pct:-null}" "${w_pct:-null}" "${d_resets:-null}" "${w_resets:-null}" \
       > "$tmp" 2>/dev/null && mv -f "$tmp" "$quota_cache" 2>/dev/null || rm -f "$tmp" 2>/dev/null
-  elif [ "$have_jq" -eq 1 ] && [ -f "$quota_cache" ]; then
-    local c_d="" c_w="" c_dr="" c_wr="" c_ts=0
+  elif [ -f "$quota_cache" ]; then
+    local c_d="" c_w="" c_dr=0 c_wr=0
     eval "$(jq -r '
-      @sh "c_d=\(.five_hour // empty | numbers | floor)",
-      @sh "c_w=\(.seven_day // empty | numbers | floor)",
-      @sh "c_dr=\(.five_hour_resets // empty | numbers | floor)",
-      @sh "c_wr=\(.seven_day_resets // empty | numbers | floor)",
-      @sh "c_ts=\(.ts // 0 | numbers)"
+      @sh "c_d=\(.five_hour // empty)",
+      @sh "c_w=\(.seven_day // empty)",
+      @sh "c_dr=\(.five_hour_resets // 0)",
+      @sh "c_wr=\(.seven_day_resets // 0)"
     ' "$quota_cache" 2>/dev/null)"
-    local fresh_until=$(( c_ts + 3600 ))
-    if [ -n "$c_d" ] && [ "$now_epoch" -lt "${c_dr:-$fresh_until}" ]; then d_pct="$c_d"; fi
-    if [ -n "$c_w" ] && [ "$now_epoch" -lt "${c_wr:-$fresh_until}" ]; then w_pct="$c_w"; fi
+    [ -n "$c_d" ] && [ "$now_epoch" -lt "$c_dr" ] 2>/dev/null && d_pct="$c_d"
+    [ -n "$c_w" ] && [ "$now_epoch" -lt "$c_wr" ] 2>/dev/null && w_pct="$c_w"
   fi
 
   local d_bar w_bar
@@ -182,9 +135,4 @@ render() {
   printf '%s\n' "$out"
 }
 
-# `refresh-quota` was the pre-rate_limits subcommand; accept and ignore it so
-# a stale caller (or an old cached copy kicking it in the background) is a no-op.
-case "${1:-}" in
-  refresh-quota) exit 0 ;;
-  *)             render ;;
-esac
+render
