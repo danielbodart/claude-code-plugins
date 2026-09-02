@@ -92,9 +92,9 @@ A status line showing directory, git branch, context window usage (`C`), and Cla
 **How it works:**
 - Enable the plugin and it just works — a `SessionStart` hook sets it up for you, preserving all other settings and **never overwriting a custom status line**
 - Already have your own status line? Run `/install-statusline --force` to replace it (or `/install-statusline` if the hook didn't pick it up)
-- Quota bars come from the Anthropic OAuth usage endpoint, cached to `~/.claude/quota-cache.json` and refreshed in the background every 15 min (no daemon)
+- Everything is read from the JSON Claude Code passes to the status line: the context bar from `context_window`, the quota bars from `rate_limits` (no network calls, no daemon)
 
-**Requirements:** `jq`, `curl`, and an OAuth/subscription login (quota bars show `--%` under an `ANTHROPIC_API_KEY` setup)
+**Requirements:** `jq`, and a Claude.ai Pro/Max login for the quota bars (they show `--%` under an `ANTHROPIC_API_KEY` setup)
 
 ## Installation
 

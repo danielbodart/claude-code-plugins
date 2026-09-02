@@ -1,18 +1,19 @@
 #!/bin/bash
-# Claude Code statusLine — self-contained (one file, no siblings).
+# Claude Code statusLine — self-contained (one file, no siblings, no network).
 #
-# Two modes, selected by the first argument:
-#   (none)         render the status line (reads the statusLine JSON on stdin)
-#   refresh-quota  fetch subscription quota → ~/.claude/quota-cache.json
-#
-# Renders, left to right:
+# Reads the statusLine JSON that Claude Code passes on stdin and renders,
+# left to right:
 #   <project dir (~-abbreviated)> [(worktree)] │ <git branch> │
 #   [context bar] │ [5-hour bar] │ [weekly bar] │ <model>
 #
+# Everything comes from that JSON payload (see
+# https://code.claude.com/docs/en/statusline): the context bar from
+# `context_window`, the quota bars from `rate_limits`. The only thing this
+# script touches on disk is ~/.claude/quota-cache.json, a copy of the last
+# `rate_limits` seen, so the quota bars are populated from the first prompt
+# of a new session instead of waiting for its first API response.
+#
 # Installed by the "statusline" plugin (danielbodart/claude-code-plugins).
-# The render path kicks the quota refresh by re-invoking THIS script with
-# `refresh-quota`, so a single symlink is enough to install it and it always
-# self-updates with the plugin — there is no second file to keep in sync.
 
 # ANSI escapes as real bytes (safe to print with %s). Globals so both the
 # renderer and make_bar can see them.
@@ -44,62 +45,6 @@ make_bar() {
   printf '%s' "${c}${label}:[${fs}${dim}${es}${c}] ${p}%${reset}"
 }
 
-# ============================ quota refresh =================================
-# Fetches subscription rate-limit utilization from the Anthropic OAuth usage
-# endpoint and caches it to ~/.claude/quota-cache.json for the renderer.
-# Fails silently (leaving any existing cache untouched) on missing token,
-# network error, non-200, or unparseable body. The OAuth token is only ever
-# passed to curl via a header — it is never printed.
-refresh_quota() {
-  local creds="$HOME/.claude/.credentials.json"
-  local cache="$HOME/.claude/quota-cache.json"
-  local tmp="$cache.tmp.$$"
-  local tok="" keychain_json="" body="$tmp.body" code now
-
-  command -v jq   >/dev/null 2>&1 || return 0
-  command -v curl >/dev/null 2>&1 || return 0
-
-  # Try credentials file first (Linux), then macOS Keychain.
-  if [ -f "$creds" ]; then
-    tok=$(jq -r '.claudeAiOauth.accessToken // empty' "$creds" 2>/dev/null)
-  elif command -v security >/dev/null 2>&1; then
-    keychain_json=$(security find-generic-password -s "Claude Code-credentials" -w 2>/dev/null) || true
-    if [ -n "$keychain_json" ]; then
-      tok=$(printf '%s' "$keychain_json" | jq -r '.claudeAiOauth.accessToken // empty' 2>/dev/null)
-    fi
-    keychain_json=""
-  fi
-  [ -z "$tok" ] && return 0
-
-  code=$(curl -sS -m 15 -o "$body" -w '%{http_code}' \
-    -H "Authorization: Bearer $tok" \
-    -H "anthropic-beta: oauth-2025-04-20" \
-    https://api.anthropic.com/api/oauth/usage 2>/dev/null)
-  tok=""
-
-  if [ "$code" != "200" ] || [ ! -s "$body" ]; then
-    rm -f "$body"
-    return 0
-  fi
-
-  now=$(date +%s)
-  if ! jq -e \
-    --argjson ts "$now" \
-    '{
-       five_hour:        (.five_hour.utilization // null),
-       seven_day:        (.seven_day.utilization // null),
-       five_hour_resets: (.five_hour.resets_at // null),
-       seven_day_resets: (.seven_day.resets_at // null),
-       ts: $ts
-     }' "$body" > "$tmp" 2>/dev/null; then
-    rm -f "$body" "$tmp"
-    return 0
-  fi
-
-  rm -f "$body"
-  mv -f "$tmp" "$cache" 2>/dev/null || rm -f "$tmp"
-}
-
 # =============================== renderer ===================================
 render() {
   local input; input=$(cat 2>/dev/null)
@@ -107,13 +52,18 @@ render() {
   local have_jq=0
   command -v jq >/dev/null 2>&1 && have_jq=1
 
+  # One jq pass pulls every field we use. A field that is absent or null
+  # leaves its variable empty: an empty interpolation drops the whole @sh line.
+  #   context_window.*  — what /context shows: real window size for the model
+  #                       (200k, 1M, …) and a pre-computed used %.
+  #   rate_limits.*     — subscription 5-hour / 7-day usage, 0–100. Only sent
+  #                       for Pro/Max logins and only after the session's first
+  #                       API response; a window vanishes once it resets.
+  #   worktree.*        — present only inside a Claude Code worktree session.
   local project_dir="" cwd="" model_id="" model_name="" transcript_path=""
   local ctx_pct="" window_size="" used_tokens=""
+  local d_pct="" w_pct="" d_resets="" w_resets="" wt_orig=""
   if [ -n "$input" ] && [ "$have_jq" -eq 1 ]; then
-    # context_window.* is what Claude Code itself uses for /context and the
-    # auto-compact warning: the real window size for the current model (200k,
-    # 1M, …) and a pre-computed used %. Any field that is absent or null simply
-    # leaves the variable empty (empty interpolation drops the whole @sh line).
     eval "$(printf '%s' "$input" | jq -r '
       @sh "project_dir=\(.workspace.project_dir // "")",
       @sh "cwd=\(.cwd // "")",
@@ -122,19 +72,33 @@ render() {
       @sh "transcript_path=\(.transcript_path // "")",
       @sh "ctx_pct=\(.context_window.used_percentage // empty | floor)",
       @sh "window_size=\(.context_window.context_window_size // empty)",
-      @sh "used_tokens=\(.context_window.total_input_tokens // empty)"
+      @sh "used_tokens=\(.context_window.total_input_tokens // empty)",
+      @sh "d_pct=\(.rate_limits.five_hour.used_percentage // empty | floor)",
+      @sh "w_pct=\(.rate_limits.seven_day.used_percentage // empty | floor)",
+      @sh "d_resets=\(.rate_limits.five_hour.resets_at // empty | floor)",
+      @sh "w_resets=\(.rate_limits.seven_day.resets_at // empty | floor)",
+      @sh "wt_orig=\(.worktree.original_cwd // "")"
     ' 2>/dev/null)"
   fi
 
   local dir="${project_dir:-$cwd}"
 
   # ---------- Segment 1: directory (~-abbreviated) ----------
-  # Detect Claude Code worktrees: .claude/worktrees/<name> → show project root
+  # Inside a Claude Code worktree show the project root, not the worktree
+  # path. Prefer the .claude/worktrees/<name> layout (gives the exact root);
+  # otherwise fall back to the payload's worktree.original_cwd, which also
+  # covers hook-based worktrees living elsewhere.
   local is_worktree=0 dir_display="$dir"
   case "$dir" in
     */.claude/worktrees/*)
       is_worktree=1
       dir_display="${dir%%/.claude/worktrees/*}"
+      ;;
+    *)
+      if [ -n "$wt_orig" ]; then
+        is_worktree=1
+        dir_display="$wt_orig"
+      fi
       ;;
   esac
   case "$dir_display" in
@@ -177,32 +141,31 @@ render() {
   local ctx_bar; ctx_bar=$(make_bar "C" "$ctx_pct" "$green")
 
   # ---------- Segment 4: subscription quota (5-hour = 5, weekly = W) ----------
-  # Read the cache written by `refresh-quota`; if it's stale, kick a refresh in
-  # the background (non-blocking) by re-invoking THIS script, so the next render
-  # is fresh. No daemon and no sibling file needed. The cache always lives in
-  # ~/.claude — a shared, writable spot, never the plugin dir.
-  local self="${BASH_SOURCE[0]:-$0}"
+  # rate_limits only arrives after the first API response of a session, so
+  # keep the last values seen in ~/.claude/quota-cache.json and read them back
+  # while the payload has none. A cached window is trusted until its
+  # resets_at passes (or for an hour if no reset time was recorded).
   local quota_cache="$HOME/.claude/quota-cache.json"
-  local stale_after=900          # 15 min
-  local d_pct="" w_pct="" cache_ts=0
+  local now_epoch; now_epoch=$(date +%s 2>/dev/null || echo 0)
 
-  if [ "$have_jq" -eq 1 ] && [ -f "$quota_cache" ]; then
+  if [ -n "$d_pct$w_pct" ]; then
+    local tmp="$quota_cache.tmp.$$"
+    printf '{"five_hour":%s,"seven_day":%s,"five_hour_resets":%s,"seven_day_resets":%s,"ts":%s}\n' \
+      "${d_pct:-null}" "${w_pct:-null}" "${d_resets:-null}" "${w_resets:-null}" "$now_epoch" \
+      > "$tmp" 2>/dev/null && mv -f "$tmp" "$quota_cache" 2>/dev/null || rm -f "$tmp" 2>/dev/null
+  elif [ "$have_jq" -eq 1 ] && [ -f "$quota_cache" ]; then
+    local c_d="" c_w="" c_dr="" c_wr="" c_ts=0
     eval "$(jq -r '
-      @sh "cache_ts=\(.ts // 0)",
-      @sh "d_pct=\((.five_hour // empty) | floor)",
-      @sh "w_pct=\((.seven_day // empty) | floor)"
+      @sh "c_d=\(.five_hour // empty | numbers | floor)",
+      @sh "c_w=\(.seven_day // empty | numbers | floor)",
+      @sh "c_dr=\(.five_hour_resets // empty | numbers | floor)",
+      @sh "c_wr=\(.seven_day_resets // empty | numbers | floor)",
+      @sh "c_ts=\(.ts // 0 | numbers)"
     ' "$quota_cache" 2>/dev/null)"
+    local fresh_until=$(( c_ts + 3600 ))
+    if [ -n "$c_d" ] && [ "$now_epoch" -lt "${c_dr:-$fresh_until}" ]; then d_pct="$c_d"; fi
+    if [ -n "$c_w" ] && [ "$now_epoch" -lt "${c_wr:-$fresh_until}" ]; then w_pct="$c_w"; fi
   fi
-
-  local now_epoch age
-  now_epoch=$(date +%s 2>/dev/null || echo 0)
-  age=$(( now_epoch - cache_ts ))
-  if [ ! -f "$quota_cache" ] || [ "$age" -ge "$stale_after" ]; then
-    # stale or missing -> refresh out of band, don't block the prompt
-    ( bash "$self" refresh-quota >/dev/null 2>&1 & ) 2>/dev/null
-  fi
-  # If the cache is far too old, treat values as unknown so we don't show stale %.
-  if [ "$age" -ge "$(( stale_after * 4 ))" ]; then d_pct=""; w_pct=""; fi
 
   local d_bar w_bar
   d_bar=$(make_bar "5" "$d_pct" "$cyan")
@@ -219,8 +182,9 @@ render() {
   printf '%s\n' "$out"
 }
 
-# =============================== dispatch ===================================
+# `refresh-quota` was the pre-rate_limits subcommand; accept and ignore it so
+# a stale caller (or an old cached copy kicking it in the background) is a no-op.
 case "${1:-}" in
-  refresh-quota) refresh_quota ;;
+  refresh-quota) exit 0 ;;
   *)             render ;;
 esac

@@ -66,19 +66,25 @@ self-contained **copy** that survives the source being deleted. Either way the
 installer never clobbers a foreign `statusLine` — or a real file you've placed
 at that path — without `--force`.
 
-## How the quota bars work
+## How the bars work
 
-The status line is **one self-contained script**. When
-`~/.claude/quota-cache.json` is older than 15 minutes, the render path kicks a
-refresh in the background (no daemon, no cron, no second file) by re-invoking
-**itself** — `statusline.sh refresh-quota` — so the next render is fresh. The
-refresh calls the Anthropic OAuth usage endpoint using the token already in
-`~/.claude/.credentials.json` — the token is only ever passed to `curl` as a
-header, never printed — and writes:
+The status line is **one self-contained script** with no network access. It
+reads the JSON that Claude Code passes to every status line on stdin (see the
+[status line docs](https://code.claude.com/docs/en/statusline)) and uses:
+
+- `context_window.used_percentage` for the `C` bar — the same figure `/context`
+  shows, computed against the real window size for the current model.
+- `rate_limits.five_hour` / `rate_limits.seven_day` for the `5` and `W` bars.
+  Claude Code sends these for Claude.ai Pro and Max subscriptions.
+
+`rate_limits` only appears after a session's first API response, so the script
+keeps the last values it saw in `~/.claude/quota-cache.json` and reads them back
+until fresh ones arrive. A cached window is trusted until its `resets_at` time
+passes:
 
 ```json
-{ "five_hour": 0.0, "seven_day": 100.0,
-  "five_hour_resets": null, "seven_day_resets": "…Z", "ts": 1784020664 }
+{ "five_hour": 23, "seven_day": 81,
+  "five_hour_resets": 1788346155, "seven_day_resets": 1788433155, "ts": 1788343155 }
 ```
 
 Anthropic's shortest exposed window is 5-hourly (there is no daily figure), which
@@ -86,17 +92,15 @@ is why the middle bar is labelled `5`, not `D`.
 
 ## Requirements
 
-- `jq` — JSON processor (status line degrades to a blank quota bar without it)
-- `curl` — for the quota refresher
-- An OAuth / subscription login (token in `~/.claude/.credentials.json`). With an
-  `ANTHROPIC_API_KEY` setup instead, the `5`/`W` bars show `--%` and everything
-  else still works.
+- `jq` — JSON processor (without it every bar shows `--%`)
+- A Claude.ai Pro/Max login for the `5`/`W` bars. With an `ANTHROPIC_API_KEY`
+  setup instead, those two bars show `--%` and everything else still works.
 
 ## Files
 
 | File | Role |
 |------|------|
-| `scripts/statusline.sh` | Self-contained renderer + quota refresher (`refresh-quota` subcommand). |
+| `scripts/statusline.sh` | Self-contained renderer. |
 | `scripts/auto-install.sh` | SessionStart hook — installs / self-heals the stable symlink. |
 | `install.sh` | Deterministic, clobber-safe installer. |
 | `uninstall.sh` | Removes statusLine from settings.json and cleans up. |

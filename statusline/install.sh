@@ -14,8 +14,8 @@
 #   copy   (--copy): ~/.claude/statusline.sh is a COPY. Self-contained; survives
 #          the source being deleted, but does not auto-update.
 #
-# The status line is one self-contained script — it kicks its own quota refresh
-# by re-invoking itself with `refresh-quota`, so there is no second file.
+# The status line is one self-contained script that only reads the JSON
+# Claude Code passes it on stdin — there is no second file and no network.
 #
 # Clobber-safe: if settings.json already has a statusLine pointing somewhere
 # ELSE, the installer refuses and exits 3, leaving your config untouched —

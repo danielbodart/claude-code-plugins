@@ -48,7 +48,7 @@ prompting (e.g. `/install-statusline --force`).
      dir under `~/.claude/`, so it auto-updates whenever the plugin updates
      (nothing is copied). Run standalone, `install.sh` copies the scripts into
      `~/.claude` instead.
-   - The `5`/`W` quota bars require an OAuth login (token in
-     `~/.claude/.credentials.json`); with an `ANTHROPIC_API_KEY` setup they show
+   - The `5`/`W` quota bars read the `rate_limits` Claude Code reports for
+     Claude.ai Pro/Max subscriptions; with an `ANTHROPIC_API_KEY` setup they show
      `--%` and everything else still works.
    - It appears on the next render.
