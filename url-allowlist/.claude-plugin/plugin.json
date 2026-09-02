@@ -1,6 +1,6 @@
 {
   "name": "url-allowlist",
-  "version": "1.0.59",
+  "version": "1.0.61",
   "description": "Restricts WebFetch to only URLs discovered via WebSearch results, preventing arbitrary URL access",
   "author": {
     "name": "Daniel Worthington-Bodart",

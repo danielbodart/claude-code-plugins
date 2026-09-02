@@ -1,6 +1,6 @@
 {
   "name": "web-researcher",
-  "version": "1.0.59",
+  "version": "1.0.61",
   "description": "Deep web research agent that finds and synthesizes information from multiple sources",
   "author": {
     "name": "Daniel Worthington-Bodart",
