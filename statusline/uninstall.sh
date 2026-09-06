@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # statusline plugin — uninstaller
 #
 # Removes the statusLine key from ~/.claude/settings.json and cleans up

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Auto-install / self-heal the statusline on every session start.
 # Runs via the SessionStart hook.
 #

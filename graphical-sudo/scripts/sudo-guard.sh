@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Claude Code hook: graphical authentication for sudo commands
 # Uses sudo -A with zenity askpass for GTK-based Linux desktops
 #

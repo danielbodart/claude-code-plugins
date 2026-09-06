@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Check that required system dependencies are installed
 # Runs as a SessionStart hook to warn early about missing tools
 

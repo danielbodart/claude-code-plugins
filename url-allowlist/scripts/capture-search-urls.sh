@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # PostToolUse hook for WebSearch - captures URLs from search results
 # Stores them in a file that the WebFetch validator can check
 

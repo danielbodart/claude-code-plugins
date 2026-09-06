@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # PostToolUse hook for WebFetch - captures redirect URLs from responses
 # Adds them to the approved list so following redirects works
 

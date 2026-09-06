@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # PreToolUse hook for WebFetch - validates URL came from a recent WebSearch
 #
 # Behavior depends on permission mode:

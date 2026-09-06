@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # statusline plugin — installer (deterministic engine)
 #
 # Merges a statusLine key into ~/.claude/settings.json, preserving all other

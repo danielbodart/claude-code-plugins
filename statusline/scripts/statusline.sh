@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Claude Code statusLine — one file, no siblings, no network.
 #
 # Reads the statusLine JSON Claude Code passes on stdin
