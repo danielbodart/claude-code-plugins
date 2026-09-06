@@ -1,6 +1,6 @@
 {
   "name": "graphical-sudo",
-  "version": "1.0.61",
+  "version": "1.0.63",
   "description": "Enables graphical password prompts for sudo commands on Linux GTK desktops using zenity",
   "author": {
     "name": "Daniel Worthington-Bodart",
