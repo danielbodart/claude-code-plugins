@@ -45,6 +45,10 @@ This means the trust model is similar to clicking links in any search results—
 
 - `jq` - JSON processor
 
+Install with `sudo apt install jq` on Debian/Ubuntu. On NixOS, add `jq` to
+`environment.systemPackages` in `/etc/nixos/configuration.nix`, then run
+`sudo nixos-rebuild switch`.
+
 ## Configuration
 
 Copy `.env.example` to `.env` and customize:

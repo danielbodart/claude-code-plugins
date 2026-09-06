@@ -5,17 +5,13 @@
 # Consume stdin (SessionStart sends JSON input)
 cat > /dev/null
 
+here="$(dirname "${BASH_SOURCE[0]}")"
+source "$here/lib-deps.sh"
+source "$here/lib-sound.sh"
+
 missing=()
+find_sound_player &>/dev/null || missing+=("pulseaudio-utils|pulseaudio")
+find_sound_file   &>/dev/null || missing+=("sound-theme-freedesktop|sound-theme-freedesktop")
 
-command -v paplay &>/dev/null || missing+=("pulseaudio-utils")
-[ -f /usr/share/sounds/freedesktop/stereo/complete.oga ] || missing+=("sound-theme-freedesktop")
-
-[ ${#missing[@]} -eq 0 ] && exit 0
-
-# Build comma-separated list
-list=$(IFS=", "; echo "${missing[*]}")
-
-cat <<EOF
-{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"notification-sound plugin: missing dependencies: ${list}. Install with: sudo apt install ${missing[*]}"}}
-EOF
-exit 2
+report_missing "notification-sound" "${missing[@]}"
+exit $?

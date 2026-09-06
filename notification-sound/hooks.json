@@ -16,7 +16,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "paplay /usr/share/sounds/freedesktop/stereo/complete.oga"
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/play-notification.sh"
           }
         ]
       }
