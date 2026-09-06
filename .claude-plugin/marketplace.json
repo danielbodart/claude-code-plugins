@@ -10,43 +10,43 @@
       "name": "graphical-sudo",
       "source": "./graphical-sudo",
       "description": "Replaces sudo with pkexec for graphical authentication on Linux (GNOME/Cinnamon/GTK)",
-      "version": "1.0.63"
+      "version": "1.0.65"
     },
     {
       "name": "url-allowlist",
       "source": "./url-allowlist",
       "description": "Restricts WebFetch to URLs discovered via WebSearch, preventing arbitrary URL access",
-      "version": "1.0.63"
+      "version": "1.0.65"
     },
     {
       "name": "commit-push-trunk",
       "source": "./commit-push-trunk",
       "description": "Commit and push directly to trunk with linear history, supporting git worktrees",
-      "version": "1.0.63"
+      "version": "1.0.65"
     },
     {
       "name": "code-review-local",
       "source": "./code-review-local",
       "description": "Code review local uncommitted or unpushed changes with multi-agent confidence scoring",
-      "version": "1.0.63"
+      "version": "1.0.65"
     },
     {
       "name": "web-researcher",
       "source": "./web-researcher",
       "description": "Deep web research agent that finds and synthesizes information from multiple sources",
-      "version": "1.0.63"
+      "version": "1.0.65"
     },
     {
       "name": "notification-sound",
       "source": "./notification-sound",
       "description": "Plays a notification sound when Claude has been waiting for your input for over a minute",
-      "version": "1.0.63"
+      "version": "1.0.65"
     },
     {
       "name": "statusline",
       "source": "./statusline",
       "description": "A status line showing directory, git branch, context window usage, and Claude subscription quota (5-hour + weekly)",
-      "version": "1.0.63"
+      "version": "1.0.65"
     }
   ]
 }
