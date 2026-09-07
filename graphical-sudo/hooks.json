@@ -6,17 +6,10 @@
           {
             "type": "command",
             "command": "${CLAUDE_PLUGIN_ROOT}/scripts/check-dependencies.sh"
-          }
-        ]
-      }
-    ],
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
+          },
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/sudo-guard.sh"
+            "command": "${CLAUDE_PLUGIN_ROOT}/scripts/auto-install.sh"
           }
         ]
       }
