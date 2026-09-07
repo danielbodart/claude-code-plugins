@@ -15,10 +15,10 @@ set -u
 # Long commands are folded the way a shell command is written out in
 # documentation: broken at argument boundaries, each line but the last ending
 # in a backslash, continuations indented under the first line.
-WRAP_WIDTH=120
+WRAP_WIDTH=80
 FIRST_INDENT='    '
 CONT_INDENT='        '
-MAX_CHARS=960
+MAX_LINES=8
 
 prompt=${1:-Password:}
 
@@ -35,19 +35,20 @@ cmd=${cmd%"${cmd##*[![:space:]]}"}
 if [ -n "$cmd" ]; then
     head=${cmd%% *}
     cmd="${head##*/}${cmd#"$head"}"
-    [ ${#cmd} -gt $MAX_CHARS ] && cmd="${cmd:0:$MAX_CHARS}…"
 fi
 
 # Pack the command into indented lines no wider than WRAP_WIDTH, leaving room
 # on every line but the last for the " \" continuation marker. Words are kept
 # whole where they fit and split mid-token only when one is too long to fit on
-# a line of its own.
+# a line of its own. Past MAX_LINES the rest is dropped and the last line ends
+# in an ellipsis -- capping lines rather than characters keeps the dialog the
+# same height whatever the width and however the arguments happen to break.
 wrap_command() {
     local cmd=$1
     local -a words lines=()
     local pad=$FIRST_INDENT line=$FIRST_INDENT
     local limit=$((WRAP_WIDTH - 2))
-    local word sep chunk i out
+    local word sep chunk i out truncated=0
 
     read -ra words <<<"$cmd"
     for word in "${words[@]}"; do
@@ -59,22 +60,33 @@ wrap_command() {
                 break
             fi
             if [ "$line" != "$pad" ]; then
+                # Flush and retry the whole word on a fresh line.
                 lines+=("$line")
-                pad=$CONT_INDENT
-                line=$pad
-                continue
+            else
+                # Too long even alone: take what fits and carry the rest.
+                chunk=${word:0:$((limit - ${#line}))}
+                # Pathological only if the indent alone fills the line.
+                [ -z "$chunk" ] && chunk=$word
+                lines+=("$line$chunk")
+                word=${word:${#chunk}}
             fi
-            chunk=${word:0:$((limit - ${#line}))}
-            # Pathological only if the indent alone fills the line.
-            [ -z "$chunk" ] && chunk=$word
-            lines+=("$line$chunk")
-            word=${word:${#chunk}}
             pad=$CONT_INDENT
             line=$pad
+            if [ ${#lines[@]} -ge $MAX_LINES ]; then
+                truncated=1
+                break 2
+            fi
             [ -z "$word" ] && break
         done
     done
-    lines+=("$line")
+
+    if [ $truncated -eq 1 ]; then
+        # Room for this is already there: lines are packed to WRAP_WIDTH - 2
+        # and the last one carries no continuation marker.
+        lines[$((${#lines[@]} - 1))]+='…'
+    elif [ "$line" != "$pad" ] || [ ${#lines[@]} -eq 0 ]; then
+        lines+=("$line")
+    fi
 
     out=''
     for ((i = 0; i < ${#lines[@]} - 1; i++)); do
