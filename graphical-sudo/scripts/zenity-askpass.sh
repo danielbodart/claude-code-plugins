@@ -30,34 +30,35 @@ if [ -n "$cmd" ]; then
     [ ${#cmd} -gt 240 ] && cmd="${cmd:0:240}…"
 fi
 
-# --text is Pango markup, so the command has to be escaped before it goes in.
-# The backslashes are required: since bash 5.2 an unquoted & in a substitution
-# replacement stands for the matched text, which would mangle every entity.
-escape_markup() {
+# zenity runs --text through g_strcompress() and then sets it as a mnemonic
+# label, so a backslash in the command would be read as an escape sequence and
+# an underscore would be swallowed as an accelerator. Both survive doubled.
+# The text is not markup here (--entry uses gtk_label_set_text_with_mnemonic),
+# so < and & need no escaping.
+escape_label() {
     local s=$1
-    s=${s//&/\&amp;}
-    s=${s//</\&lt;}
-    s=${s//>/\&gt;}
+    s=${s//\\/\\\\}
+    s=${s//_/__}
     printf '%s' "$s"
 }
 
 if [ -n "$cmd" ]; then
     text="Authenticate to run as root:
 
-<tt>$(escape_markup "$cmd")</tt>"
+    $(escape_label "$cmd")
+
+$(escape_label "$field"):"
 else
-    text="Authenticate to run as root."
+    text="Authenticate to run as root.
+
+$(escape_label "$field"):"
 fi
 
-# --forms is the only zenity dialogue that pairs a password field with body
-# text, so it is what names the command. Older builds lack it; ask zenity
-# rather than falling back on a non-zero exit, because cancelling the dialogue
-# also exits non-zero and must not pop a second one.
-if zenity --help-forms 2>/dev/null | grep -qF -- '--add-password'; then
-    exec zenity --forms \
-                --title="Authentication Required" \
-                --text="$text" \
-                --add-password="$field" 2>/dev/null
-fi
-
-exec zenity --password --title="Authentication Required" 2>/dev/null
+# --entry --hide-text, not --forms --add-password: only --entry calls
+# gtk_entry_set_activates_default(), so Enter accepts the dialog instead of
+# doing nothing. Both mask the input and both can carry body text naming the
+# command; --forms would just cost a mouse click on every prompt.
+exec zenity --entry \
+            --hide-text \
+            --title="Authentication Required" \
+            --text="$text" 2>/dev/null
