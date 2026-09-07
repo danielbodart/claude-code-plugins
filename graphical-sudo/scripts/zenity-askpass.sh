@@ -12,6 +12,14 @@
 
 set -u
 
+# Long commands are folded the way a shell command is written out in
+# documentation: broken at argument boundaries, each line but the last ending
+# in a backslash, continuations indented under the first line.
+WRAP_WIDTH=120
+FIRST_INDENT='    '
+CONT_INDENT='        '
+MAX_CHARS=960
+
 prompt=${1:-Password:}
 
 # "[sudo] password for dan: " -> "Password for dan"
@@ -27,8 +35,53 @@ cmd=${cmd%"${cmd##*[![:space:]]}"}
 if [ -n "$cmd" ]; then
     head=${cmd%% *}
     cmd="${head##*/}${cmd#"$head"}"
-    [ ${#cmd} -gt 240 ] && cmd="${cmd:0:240}…"
+    [ ${#cmd} -gt $MAX_CHARS ] && cmd="${cmd:0:$MAX_CHARS}…"
 fi
+
+# Pack the command into indented lines no wider than WRAP_WIDTH, leaving room
+# on every line but the last for the " \" continuation marker. Words are kept
+# whole where they fit and split mid-token only when one is too long to fit on
+# a line of its own.
+wrap_command() {
+    local cmd=$1
+    local -a words lines=()
+    local pad=$FIRST_INDENT line=$FIRST_INDENT
+    local limit=$((WRAP_WIDTH - 2))
+    local word sep chunk i out
+
+    read -ra words <<<"$cmd"
+    for word in "${words[@]}"; do
+        while :; do
+            sep=' '
+            [ "$line" = "$pad" ] && sep=''
+            if [ $((${#line} + ${#sep} + ${#word})) -le $limit ]; then
+                line="$line$sep$word"
+                break
+            fi
+            if [ "$line" != "$pad" ]; then
+                lines+=("$line")
+                pad=$CONT_INDENT
+                line=$pad
+                continue
+            fi
+            chunk=${word:0:$((limit - ${#line}))}
+            # Pathological only if the indent alone fills the line.
+            [ -z "$chunk" ] && chunk=$word
+            lines+=("$line$chunk")
+            word=${word:${#chunk}}
+            pad=$CONT_INDENT
+            line=$pad
+            [ -z "$word" ] && break
+        done
+    done
+    lines+=("$line")
+
+    out=''
+    for ((i = 0; i < ${#lines[@]} - 1; i++)); do
+        out+="${lines[i]} \\"$'\n'
+    done
+    printf '%s' "$out${lines[${#lines[@]} - 1]}"
+}
 
 # zenity runs --text through g_strcompress() and then sets it as a mnemonic
 # label, so a backslash in the command would be read as an escape sequence and
@@ -45,7 +98,7 @@ escape_label() {
 if [ -n "$cmd" ]; then
     text="Authenticate to run as root:
 
-    $(escape_label "$cmd")
+$(escape_label "$(wrap_command "$cmd")")
 
 $(escape_label "$field"):"
 else
