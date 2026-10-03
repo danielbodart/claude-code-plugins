@@ -9,12 +9,12 @@ A collection of Claude Code plugins for security, git workflows, code review, an
 Enables graphical password prompts for `sudo` commands on Linux GTK desktops (GNOME, Cinnamon, MATE, Xfce, etc.).
 
 **How it works:**
-- Points `SUDO_ASKPASS` at a zenity helper via the `env` block in `settings.json`
-- Zenity shows a graphical password dialog naming the command being authenticated
+- Points `SUDO_ASKPASS` at a dialog helper via the `env` block in `settings.json`
+- galley (when running, queuing the prompt with others) or zenity shows a graphical password dialog naming the command being authenticated
 - Returns the output to Claude without requiring terminal password entry
 - Never inspects or rewrites commands, so `sudo` works anywhere in an expression
 
-**Requirements:** `jq`, `zenity` (pre-installed on most GTK desktops)
+**Requirements:** `jq`, and `zenity` (pre-installed on most GTK desktops) or [`galley`](https://github.com/danielbodart/galley)
 
 ### [url-allowlist](./url-allowlist/)
 

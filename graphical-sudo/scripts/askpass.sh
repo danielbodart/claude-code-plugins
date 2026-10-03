@@ -119,11 +119,42 @@ else
 $(escape_label "$field"):"
 fi
 
+# Prefer galley (github.com/danielbodart/galley) when it is running: it is a
+# zenity drop-in -- same command line, exit codes and stdout for --entry
+# --hide-text -- whose dialogs stack in one queue window, so this prompt waits
+# its turn beside any others instead of opening a window of its own.
+#
+# This has to be decided before running anything. galley exits 1 when it
+# cannot reach its window, the same code as Cancel, so a failed galley cannot
+# be told apart from a refused prompt and fallen back from afterwards. galley
+# counts as running when its socket, $XDG_RUNTIME_DIR/galley/sock, exists and
+# its client can be found; otherwise zenity is run as it always was.
+#
+# sudo execs the askpass helper with the caller's environment untouched, so
+# PATH is whatever the sudo caller had. The Nix profile bin directories are
+# tried after it in case that PATH is a narrow one.
+find_galley() {
+    local dir
+    command -v galley 2>/dev/null && return 0
+    for dir in "$HOME/.nix-profile/bin" \
+               "${XDG_STATE_HOME:-$HOME/.local/state}/nix/profile/bin" \
+               "/etc/profiles/per-user/${USER:-$(id -un)}/bin"; do
+        [ -x "$dir/galley" ] && { printf '%s\n' "$dir/galley"; return 0; }
+    done
+    return 1
+}
+
+dialog=zenity
+if [ -n "${XDG_RUNTIME_DIR:-}" ] && [ -S "$XDG_RUNTIME_DIR/galley/sock" ] \
+        && galley=$(find_galley); then
+    dialog=$galley
+fi
+
 # --entry --hide-text, not --forms --add-password: only --entry calls
 # gtk_entry_set_activates_default(), so Enter accepts the dialog instead of
 # doing nothing. Both mask the input and both can carry body text naming the
 # command; --forms would just cost a mouse click on every prompt.
-exec zenity --entry \
-            --hide-text \
-            --title="Authentication Required" \
-            --text="$text" 2>/dev/null
+exec "$dialog" --entry \
+               --hide-text \
+               --title="Authentication Required" \
+               --text="$text" 2>/dev/null

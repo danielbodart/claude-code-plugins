@@ -42,7 +42,7 @@ claude_dir="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
 settings="$claude_dir/settings.json"
 helper="$claude_dir/sudo-askpass.sh"
 plugin_root="${CLAUDE_PLUGIN_ROOT:-$(CDPATH= cd -- "$(dirname "$0")/.." >/dev/null 2>&1 && pwd)}"
-src="$plugin_root/scripts/zenity-askpass.sh"
+src="$plugin_root/scripts/askpass.sh"
 marker='# graphical-sudo: askpass helper -- MANAGED FILE'
 
 command -v jq >/dev/null 2>&1 || exit 0
